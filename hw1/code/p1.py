@@ -1,5 +1,3 @@
-import pandas as pd
-
 """
 1. observation:
 2. variables:
@@ -15,5 +13,12 @@ import pandas as pd
 8. present my result clearly
 9. 2-3 sentences to describe what I learned?
 """
-n = dp.shape[0]
+from pathlib import Path
+
+import pandas as pd
+
+DATA_PATH = Path(__file__).parent.parent / "doc" / "01_Fast foods - Nutritional information.xlsx"
+
+df = pd.read_excel(DATA_PATH)
+n = df.shape[0]
 print(n)
