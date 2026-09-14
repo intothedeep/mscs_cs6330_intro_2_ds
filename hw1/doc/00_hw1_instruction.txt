@@ -1,0 +1,11 @@
+Instructions
+Please use the attached data to answer the questions. 
+you are welcome to use any programming language. I highly recommend you to use R, Python or MATLAB. If you are not familiar with any of these languages, it would be a good opportunity to start learning them with these simple questions. 
+Please just submit the answers to the questions in a txt,word,pdf,...file. Don't submit any zip file. You don't need to submit any code, but it is okay if you want. 
+Q1. 15 pts
+Q2. 12 pts
+Q3. 12 pts
+Q4. 15 pts
+Q5. 15 pts
+Q6. 23 pts
+Q7. 8 pts
