@@ -47,6 +47,7 @@ x_*
 .claude/
 .venv/
 .vscode/
+.ruff_cache
 
 # real lab data — the source workbook holds REAL colony records; never committed.
 # The anonymized seed generator (P0.5) is the committed substitute.

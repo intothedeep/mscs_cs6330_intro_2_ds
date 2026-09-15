@@ -1,0 +1,17 @@
+Data and Distributions
+
+Hide Assignment Information
+Instructions
+Please submit a word/pdf document including your discussion and the screenshot of the charts. If you want a partial credit, please submit the code you used to generate the results (whatever language it is). 
+Here is how the grading works:
+Problem 1. -> 90 points
+- Parameters for each distribution (5 each) -> (5*4) * 2 = 40
+- Distribution of data (5 each) -> 5*2 = 10
+- Distribution of the hypothetical distribution and final discussion -> 20 *2 = 40
+[Distribution could be PDF, CDF, QQPLOT]
+Problem 2. ->  30 points
+-Plot distribution of age (5 points)
+-Plot distribution of smallest digit (5 points)
+-Plot distribution of largest digit (5 points)
+-Discussion ( 15 points)
+Due on Sep 30, 2026 11:59 PM
