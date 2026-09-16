@@ -1,0 +1,9 @@
+# XeLaTeX 고정: 한글 조판에 xeCJK 가 필요합니다 (preamble/packages.tex 참조).
+$pdf_mode = 5;          # 5 = xelatex
+$postscript_mode = 0;
+$dvi_mode = 0;
+$bibtex_use = 2;        # .bib 이 바뀌면 bibtex 자동 실행
+$clean_ext = "bbl nav out snm synctex.gz run.xml";
+
+# 그림 배치가 한두 번 더 흔들릴 수 있어 기본값(5)보다 넉넉히 준다.
+$max_repeat = 8;

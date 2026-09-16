@@ -1,0 +1,497 @@
+\chapter{시각화 --- 요약이 숨긴 것을 보기}
+\label{ch:visualization}
+
+\Cref{ch:descriptive}은 \analogy{지도}가 반드시 무언가를 버린다는 결론으로
+끝났다. 이 장은 그 버려진 것을 되찾는 \analogy{항공사진}을 다룬다.
+
+강의의 표현을 그대로 옮기면 이렇다. \emph{``통계값은 숫자이고 유용하지만, 이야기
+전체를 들려주지는 않는다.''} 시각화는 한 변수의 분포를 이해할 때 유용하고,
+여러 변수의 분포를 \textbf{비교}할 때는 거의 필수다.
+
+\begin{keyidea}
+차트는 장식이 아니라 \textbf{질문에 답하는 도구}다. 먼저 ``이 그림으로 무엇을
+묻는가''를 정하고, 그 다음에 형태를 고른다. 순서를 뒤집으면 예쁘지만 아무것도
+답하지 않는 그림이 나온다.
+\end{keyidea}
+
+% =====================================================================
+\section{분위수와 백분위수}
+\label{sec:quantile}
+
+\begin{inbrief}
+  \item[Why] 평균 하나로는 부족하고, 분포의 \emph{여러 지점}을 알아야 하기 때문이다.
+  \item[When] 박스플롯, $\IQR$, 신뢰구간 --- 이 장의 거의 모든 도구가 분위수 위에 선다.
+  \item[Where] 왜도가 있는 데이터에서 특히 중요하다. 평균은 무너져도 분위수는 버틴다.
+  \item[How] 정렬 $\rightarrow$ 각 값에 $0$에서 $1$까지의 위치를 매김 $\rightarrow$
+             원하는 위치에서 보간(Interpolation).
+\end{inbrief}
+
+\begin{definition}[분위수와 백분위수]
+\label{def:quantile}
+\term{분위수}(Quantile)는 데이터를 \textbf{같은 크기의 그룹으로 나누는 경계선}이다.
+\term{백분위수}(Percentile)는 그중 데이터를 \textbf{100개} 그룹으로 나누는 분위수다.
+
+$k$번째 백분위수는 값들을 나누어, $k\%$ 가 그 아래에 놓이고 $(100-k)\%$ 가 그
+위에 놓이게 하는 값이다.
+\end{definition}
+
+\begin{aside}[둘의 관계]
+백분위수는 분위수의 \textbf{부분집합}이다. 분위수 \contains{} 백분위수.
+같은 지점을 부르는 이름이 둘인 셈이라 혼용되지만, 엄밀히는 \emph{눈금의 개수}가
+다르다 --- 사분위수(Quartile)는 4등분, 십분위수(Decile)는 10등분, 백분위수는
+100등분이다. 소프트웨어에서는 보통 $0 \sim 1$ 을 받는 \texttt{quantile()} 하나로
+통일되어 있다.
+\end{aside}
+
+\begin{center}
+\begin{tabularx}{\linewidth}{@{}l l l X@{}}
+\toprule
+이름 & 몇 등분 & 표기 & 비고 \\
+\midrule
+사분위수(Quartile) & 4 & $Q_1, Q_2, Q_3$ & $Q_1$ = 하사분위수(Lower Quartile) \\
+십분위수(Decile) & 10 & $D_1 \dots D_9$ & \\
+백분위수(Percentile) & 100 & $P_1 \dots P_{99}$ & $P_{50} = Q_2 = $ 중앙값 \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{pitfall}[0\% 분위수는 왜 최솟값인가]
+강의가 던지는 질문이다. $0\%$ 분위수(0번째 백분위수)는 \textbf{최솟값}이다.
+정의상 ``그 값보다 작은 값이 $0\%$''여야 하는데, 최솟값보다 작은 값은 데이터에
+하나도 없기 때문이다. 같은 이유로 $100\%$ 분위수는 최댓값이다.
+\end{pitfall}
+
+\subsection{직접 계산해 보기}
+\label{subsec:quantile-calc}
+
+\begin{example}[25\% 분위수 구하기]
+\label{ex:quantile}
+강의 예제다. 여섯 개의 값이 있다: $3.7,\ 2.7,\ 3.3,\ 1.3,\ 2.2,\ 3.1$.
+
+\textbf{1단계 --- 정렬한다.}
+\[
+  1.3,\quad 2.2,\quad 2.7,\quad 3.1,\quad 3.3,\quad 3.7
+\]
+
+\textbf{2단계 --- 각 값에 $0$부터 $1$까지 등간격의 위치를 매긴다.}
+$n = 6$ 이므로 $i$번째 값의 위치는 $(i-1)/(n-1) = (i-1)/5$ 다.
+
+\begin{center}
+\begin{tabular}{@{}lrrrrrr@{}}
+\toprule
+$i$ & 1 & 2 & 3 & 4 & 5 & 6 \\
+값 & 1.3 & 2.2 & 2.7 & 3.1 & 3.3 & 3.7 \\
+위치 & 0.0 & 0.2 & 0.4 & 0.6 & 0.8 & 1.0 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{3단계 --- 0.25는 눈금 사이에 있으므로 보간한다.}
+$0.25$ 는 $0.2$(값 2.2)와 $0.4$(값 2.7) 사이에 있다. $0.2$ 에서
+$0.05$ 만큼 갔으므로 전체 간격 $0.2$ 의 $1/4$ 지점이다.
+\[
+  0.75 \times 2.2 + 0.25 \times 2.7 = 1.65 + 0.675 = \mathbf{2.325}
+\]
+
+즉 하사분위수는 2.325다. \textbf{데이터에 없는 값}이라는 점에 주의하자 ---
+분위수는 관측값 중 하나일 필요가 없다.
+\end{example}
+
+\begin{lstlisting}[language=Python]
+import pandas as pd
+s = pd.Series([3.3, 2.7, 2.2, 1.3, 3.7, 3.1])
+s.quantile(0.25)    # 2.325  <- 위 손계산과 일치
+\end{lstlisting}
+
+\begin{figure}[ht]\centering
+  \includegraphics[width=0.85\linewidth]{05_01_quantiles.png}
+  \caption{정렬된 값에 위치를 매기고 원하는 지점을 읽는 과정. 곡선의 가로축이
+  \Cref{ex:quantile}의 ``위치'', 세로축이 그 위치의 값이다.}
+  \label{fig:quantile-curve}
+\end{figure}
+
+% =====================================================================
+\section{히스토그램}
+\label{sec:histogram}
+
+\begin{inbrief}
+  \item[Why] 확률밀도함수(Probability Density Function)를 데이터로부터 경험적으로
+             그려 보기 위해서다.
+  \item[When] 변수 하나의 분포 모양을 처음 확인할 때. 가장 먼저 그리는 그림이다.
+  \item[Where] 연속형 변수에 쓴다. 범주형에는 막대그래프(Bar Chart)를 쓴다.
+  \item[How] 데이터를 구간(Bin)으로 나누고, x축에 구간 중심을, y축에 그 구간의
+             개수(또는 비율)를 놓는다.
+\end{inbrief}
+
+\term{히스토그램}(Histogram)은 확률밀도함수의 \textbf{경험적 표현}(Empirical
+Representation)이다. 만드는 법은 단순하다.
+
+\begin{enumerate}
+  \item 데이터를 구간(Bin)으로 나눈다.
+  \item x축 = 구간의 중심점.
+  \item y축 = 그 구간에 들어간 데이터 개수(또는 전체 대비 비율).
+\end{enumerate}
+
+\subsection{구간 개수가 결론을 바꾼다}
+\label{subsec:binning}
+
+강의는 ``구간을 어떻게 나눌 것인가?''를 괄호 안에 던져 놓고 지나간다. 그런데
+이것이 히스토그램의 유일한 자유도이자 가장 큰 함정이다.
+
+\begin{figure}[ht]\centering
+  \includegraphics[width=\linewidth]{05_02_histogram_bins.png}
+  \caption{같은 데이터, 다른 구간 개수. 구간이 너무 적으면 구조가 뭉개지고, 너무
+  많으면 표본 잡음(Sampling Noise)이 봉우리처럼 보인다.}
+  \label{fig:bins}
+\end{figure}
+
+\begin{pitfall}[구간 개수는 보고해야 할 선택이다]
+구간 개수를 바꾸면 봉우리가 생겼다 사라진다. 즉 \textbf{같은 데이터에서 다른
+결론}이 나온다. 따라서 히스토그램에서 읽은 구조(``봉우리가 두 개다'')를
+주장할 때는 다른 구간 개수에서도 그 구조가 살아남는지 확인해야 한다.
+\Cref{fig:two-populations}의 두 집단은 구간을 어떻게 잡아도 사라지지 않기
+때문에 믿을 수 있는 구조다.
+\end{pitfall}
+
+\subsection{여러 분포를 나란히 놓기}
+\label{subsec:small-multiples}
+
+히스토그램 여러 개를 같은 축으로 나란히 배치하면 집단 간 차이가 드러난다. 강의는
+서브레딧별 순위 분포를 예로 든다.
+
+\begin{figure}[ht]\centering
+  \includegraphics[width=\linewidth]{05_03_small_multiples.png}
+  \caption{작은 배수(Small Multiples). 축을 공유해야 비교가 성립한다 --- 패널마다
+  축 범위가 다르면 눈은 그 차이를 읽지 못한다.}
+  \label{fig:small-multiples}
+\end{figure}
+
+\begin{pitfall}[표본 크기를 같이 적는다]
+\Cref{fig:small-multiples}에서 버거는 69개, 나머지는 11--12개다. 개수가 적은
+패널은 모양이 들쭉날쭉한데, 이것은 분포의 성질이 아니라 \textbf{표본이 작아서}
+생긴 것이다. 각 패널에 $n$ 을 적어 두지 않으면 독자가 잡음을 구조로 읽는다.
+\end{pitfall}
+
+% =====================================================================
+\section{선 그래프 --- 밀도에 더 가까이}
+\label{sec:density-line}
+
+\begin{inbrief}
+  \item[Why] 히스토그램의 계단을 매끄럽게 만들어 확률밀도함수에 더 가까이 가기 위해서다.
+  \item[When] 두 개 이상의 분포를 \emph{겹쳐서} 비교할 때. 히스토그램은 겹치면 가린다.
+  \item[Where] 데이터가 충분히 많을 때. 표본이 적으면 매끄러운 곡선이 없는 구조를
+               지어낸다.
+  \item[How] 구간을 충분히 잘게 나눠 곡선이 매끄러우면서도 분포를 왜곡하지 않는
+             지점을 찾는다.
+\end{inbrief}
+
+강의의 기준은 명확하다. \emph{``곡선이 충분히 매끄러우면서도 분포를 정확히
+표현하도록, 충분한 수의 구간을 쓴다.''} 두 조건이 서로 반대 방향으로 당기므로
+절충점을 찾아야 한다 --- \Cref{subsec:binning}의 문제가 그대로 이어진다.
+
+\begin{figure}[ht]\centering
+  \includegraphics[width=\linewidth]{05_04_density_line.png}
+  \caption{밀도 곡선(Density Line). 히스토그램의 계단을 매끄럽게 편 것이며,
+  여러 분포를 겹쳐 비교할 때 서로를 가리지 않는다는 장점이 있다.}
+  \label{fig:density}
+\end{figure}
+
+% =====================================================================
+\section{에러바 --- 요약을 나란히 놓기}
+\label{sec:errorbar}
+
+\begin{inbrief}
+  \item[Why] 비교할 범주가 너무 많아 분포를 전부 그릴 수 없을 때, 각 분포의
+             \emph{요약}만 나란히 놓기 위해서다.
+  \item[When] 연속 변수를 구간으로 나눠 그 함수로 볼 때, 또는 집단이 여럿일 때.
+  \item[Where] 분포가 단봉이고 대칭일 때만 정직하다. 이봉분포는 요약이 거짓말을 한다.
+  \item[How] 중심(평균)을 점이나 선으로, 퍼짐을 막대로 그린다.
+\end{inbrief}
+
+\begin{figure}[ht]\centering
+  \includegraphics[width=\linewidth]{05_05_error_bar.png}
+  \caption{집단별 평균 곡선과 퍼짐을 나타내는 막대. 강의의 예는 약물에 저항성인
+  환자군과 민감한 환자군의 비교다.}
+  \label{fig:errorbar}
+\end{figure}
+
+\begin{figure}[ht]\centering
+  \includegraphics[width=\linewidth]{05_06_error_variants.png}
+  \caption{에러바의 변형. 왼쪽은 에러 구름(Error Cloud), 오른쪽은 에러바를 얹은
+  막대그래프(Bar Plot with Error Bars)다. 담는 정보는 같고 강조점이 다르다.}
+  \label{fig:error-variants}
+\end{figure}
+
+\begin{pitfall}[막대가 무엇인지 캡션에 반드시 쓴다]
+\label{pit:sd-se-ci}
+에러바의 길이로 쓰이는 후보가 셋이고, \textbf{길이가 서로 몇 배씩 차이 난다}.
+
+\begin{center}
+\begin{tabularx}{\linewidth}{@{}l l X@{}}
+\toprule
+무엇 & 계산 & 무엇을 말하는가 \\
+\midrule
+표준편차 $\sd$ & $\sigma$ & \textbf{데이터}가 얼마나 퍼져 있는가 \\
+표준오차 $\mathrm{SE}$ & $\sigma/\sqrt{n}$ & \textbf{평균 추정값}이 얼마나 불안정한가 \\
+신뢰구간 $\mathrm{CI}$ & $\approx \bar{x} \pm 1.96\,\mathrm{SE}$ & 참평균이 있을 법한 범위 \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+버거 데이터로 보면 $\sd = 277.16$ 이지만 $\mathrm{SE} = 277.16/\sqrt{69} = 33.37$
+로 \textbf{8배 넘게 차이} 난다. 캡션에 무엇인지 쓰지 않은 에러바는 읽을 수 없다.
+\end{pitfall}
+
+% =====================================================================
+\section{바이올린 플롯}
+\label{sec:violin}
+
+\begin{inbrief}
+  \item[Why] 에러바와 박스플롯이 버리는 \emph{분포의 모양}을 되살리기 위해서다.
+  \item[When] 집단을 비교하는데 그 분포가 단봉이 아닐 가능성이 있을 때.
+  \item[Where] 표본이 충분해야 한다. $n$ 이 작으면 밀도 추정이 없는 봉우리를 만든다.
+  \item[How] 각 집단의 밀도 곡선을 세로로 세우고 좌우 대칭으로 펼친다.
+\end{inbrief}
+
+\begin{figure}[ht]\centering
+  \includegraphics[width=\linewidth]{05_07_violin.png}
+  \caption{바이올린 플롯. 폭이 곧 그 값 근처의 밀도이므로, 봉우리가 몇 개인지가
+  즉시 보인다. 강의의 예는 보스턴 마라톤 완주 시간의 연도별 분포다.}
+  \label{fig:violin}
+\end{figure}
+
+\begin{figure}[ht]\centering
+  \includegraphics[width=\linewidth]{05_08_violin_combined.png}
+  \caption{결합 바이올린 플롯. 두 집단을 좌우 반쪽씩 맞붙여 같은 축에서 비교한다.
+  두 집단을 나란히 두 개 그리는 것보다 시선 이동이 짧다.}
+  \label{fig:violin-combined}
+\end{figure}
+
+% =====================================================================
+\section{바코드 차트}
+\label{sec:barcode}
+
+\begin{inbrief}
+  \item[Why] 요약하지 않고 \textbf{모든 데이터 점}을 그대로 보여 주기 위해서다.
+  \item[When] 데이터 개수가 적어 요약이 오히려 정보를 없앨 때.
+  \item[Where] 각 행의 값 범위가 서로 비교 가능해야 한다. 아니면 행끼리 읽을 수 없다.
+  \item[How] 데이터 점 하나를 선 위의 막대 하나로 그리고, 변수마다 행을 따로 준다.
+\end{inbrief}
+
+강의의 예는 워싱턴 메트로의 정시 운행률이다. 각 행이 한 노선, 각 행의 12개 막대가
+월별 평균이고, 연평균은 굵은 막대로 표시된다.
+
+\begin{figure}[ht]\centering
+  \includegraphics[width=\linewidth]{05_09_barcode.png}
+  \caption{바코드 차트. 점 하나하나가 보이므로 \emph{빈 구간}이 눈에 띈다 ---
+  요약통계로는 절대 드러나지 않는 정보다.}
+  \label{fig:barcode}
+\end{figure}
+
+\begin{keyidea}
+바코드 차트는 이 장에서 유일하게 \textbf{아무것도 버리지 않는} 그림이다.
+\analogy{지도}가 아니라 \analogy{지형 그 자체}다. 그래서 데이터가 조금만 많아져도
+쓸 수 없지만, 적을 때는 가장 정직하다.
+\end{keyidea}
+
+% =====================================================================
+\section{박스플롯으로 집단 비교하기}
+\label{sec:boxplot}
+
+\begin{inbrief}
+  \item[Why] 여러 집단의 중심과 퍼짐을 한 화면에서 비교하기 위해서다.
+  \item[When] 집단이 3개 이상이고 각 집단의 분포가 대체로 단봉일 때.
+  \item[Where] 이봉분포에는 쓰면 안 된다 --- 박스플롯은 봉우리 개수를 표현하지 못한다.
+  \item[How] $Q_1$ 에서 $Q_3$ 까지 상자를 그리고, $1.5 \times \IQR$ 이내의 가장 먼
+             관측값까지 수염을 뻗고, 그 밖은 이상치로 찍는다.
+\end{inbrief}
+
+박스플롯을 만드는 규칙은 \Cref{subsec:fence}에서 이미 다뤘다. 여기서는 그것을
+\emph{비교}에 쓰는 법을 본다.
+
+\begin{figure}[ht]\centering
+  \includegraphics[width=\linewidth]{05_11_box_compare.png}
+  \caption{박스플롯으로 집단 비교하기. 중앙선의 높이 차이가 중심의 차이를,
+  상자의 길이 차이가 퍼짐의 차이를 나타낸다.}
+  \label{fig:box-compare}
+\end{figure}
+
+강의는 붓꽃 데이터에서 두 가지를 읽는다 --- 꽃받침(Sepal)의 중앙값이 꽃잎(Petal)
+보다 높고, 꽃잎 쪽의 값의 퍼짐이 더 크다. 이 두 문장이 박스플롯에서 읽어야 할
+것의 전부다. \textbf{중심의 차이}와 \textbf{퍼짐의 차이}.
+
+과제 데이터에서도 같은 방식으로 읽힌다. 음식 유형별 칼로리 중앙값은
+치킨너겟 240 $\rightarrow$ 감자튀김 315 $\rightarrow$ 그릴드치킨샌드위치 398
+$\rightarrow$ 브레디드치킨샌드위치 510 $\rightarrow$ 밀크셰이크 585
+$\rightarrow$ 버거 591 로 단조 증가한다.
+
+\subsection{노치 박스플롯}
+\label{subsec:notch}
+
+\begin{figure}[ht]\centering
+  \includegraphics[width=\linewidth]{05_12_box_notched.png}
+  \caption{노치(Notch)를 넣은 박스플롯. 허리가 잘록한 부분이 중앙값의 신뢰구간을
+  나타내며, 두 상자의 노치가 겹치지 않으면 중앙값이 다르다고 볼 근거가 된다.}
+  \label{fig:box-notch}
+\end{figure}
+
+\term{노치}(Notch)는 중앙값 주변의 불확실성을 상자에 직접 새긴 것이다. 두 집단의
+노치가 겹치지 않으면 중앙값이 통계적으로 다르다고 본다 --- \Cref{sec:ci}의
+신뢰구간 비교를 박스플롯 안으로 가져온 것이다.
+
+\begin{pitfall}[노치가 상자보다 커지면 표본이 부족한 것]
+노치의 폭은 $\pm 1.58 \times \IQR/\sqrt{n}$ 으로 계산된다. $n$ 이 작으면 이 값이
+$\IQR$ 자체보다 커져서 \textbf{노치가 상자 밖으로 뒤집혀 나온다}. 그림이
+망가진 것이 아니라, ``이 표본으로는 중앙값을 말할 수 없다''는 경고다.
+\end{pitfall}
+
+% =====================================================================
+\section{신뢰구간}
+\label{sec:ci}
+
+\begin{inbrief}
+  \item[Why] 계산한 통계값에 \emph{얼마나 불확실성이 있는지}를 함께 말하기 위해서다.
+  \item[When] 표본에서 계산한 값으로 모집단을 말하려 할 때 --- 즉 거의 항상.
+  \item[Where] 두 집단이 ``정말로'' 다른지 판단할 때. 겹치는지만 보면 된다.
+  \item[How] 공식($\bar{x} \pm z \cdot \sigma/\sqrt{n}$) 또는 부트스트랩
+             (Bootstrap) 둘 중 하나로 구한다.
+\end{inbrief}
+
+\term{신뢰구간}(Confidence Interval)은 특정 통계값에 얼마나 불확실성이 있는지를
+나타낸다. 설문 조사에서 ``오차 범위''(Margin of Error)라고 부르는 것과 같다 ---
+전체 모집단을 조사했다면 얻었을 값이 이 범위 안에 있으리라는 뜻이다.
+
+\subsection{공식으로 구하기}
+
+\[
+  \mathrm{CI} = \bar{x} \pm z \cdot \frac{s}{\sqrt{n}}
+\]
+
+\begin{center}
+\begin{tabularx}{\linewidth}{@{}l X@{}}
+\toprule
+기호 & 의미 \\
+\midrule
+$s$ & 표준편차(Standard Deviation) \\
+$n$ & 관측값의 개수 \\
+$z$ & 표에서 읽는 $z$ 값. $95\%$ 신뢰구간이면 $1.96$ \\
+$\bar{x}$ & 신뢰구간을 구하려는 대상 값 \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+$z = 1.96$ 의 의미는 이렇다. 평균에서 $-1.96$ 부터 $+1.96$ 표준편차 사이의 값이
+무작위로 뽑힐 확률이 $95\%$ 다. 뒤집으면, 어떤 값이 무작위로 뽑힐 확률이 $5\%$
+미만이면 그것을 \textbf{통계적으로 유의하다}(Statistically Significant)고 본다.
+
+\subsection{부트스트랩으로 구하기}
+\label{subsec:bootstrap}
+
+공식은 분포에 대한 가정을 필요로 한다. \term{부트스트랩}(Bootstrapping)은 그
+가정 없이, 컴퓨터로 재표집을 반복해서 같은 것을 구한다. 강의의 예는 암컷 생쥐
+12마리의 몸무게다.
+
+\begin{figure}[ht]\centering
+\begin{tikzpicture}[
+  node distance = 6mm,
+  bsbox/.style = {draw = bookrule, fill = booksurface, rounded corners = 2pt,
+                  minimum width = 62mm, minimum height = 8.5mm, align = center,
+                  font = \small},
+  arrow/.style = {-{Stealth[length=2.2mm]}, draw = bookmuted}]
+  \node[bsbox] (a) {표본 평균을 계산한다};
+  \node[bsbox, below = of a] (b)
+        {12개를 \textbf{복원추출}(Replacement)로 다시 뽑는다\\[-1pt]
+         \footnotesize 같은 개체가 여러 번 뽑혀도 된다};
+  \node[bsbox, below = of b] (c) {재표집된 12개의 평균을 계산한다};
+  \node[bsbox, below = of c] (d) {2--3 단계를 \textbf{10{,}000회 이상} 반복한다};
+  \node[bsbox, below = of d, fill = bookaccentbg, draw = bookaccent] (e)
+        {10{,}000개 평균의 2.5\%\,--\,97.5\% 구간\\[-1pt]
+         \footnotesize 이것이 95\% 신뢰구간이다};
+  \draw[arrow] (a) -- (b);
+  \draw[arrow] (b) -- (c);
+  \draw[arrow] (c) -- (d);
+  \draw[arrow] (d) -- (e);
+  \draw[arrow] (d.east) -- ++(9mm,0) |- (b.east);
+\end{tikzpicture}
+\caption{부트스트랩 절차. 핵심은 \textbf{복원추출}이다 --- 중복을 허용하지 않으면
+매번 같은 표본이 나와 아무 변동도 생기지 않는다.}
+\label{fig:bootstrap-flow}
+\end{figure}
+
+\begin{figure}[ht]\centering
+  \includegraphics[width=\linewidth]{05_13_bootstrap_ci.png}
+  \caption{버거 칼로리의 부트스트랩 신뢰구간. 재표집 10{,}000회의 평균 분포이며,
+  2.5 백분위수와 97.5 백분위수가 신뢰구간의 양끝이 된다.}
+  \label{fig:bootstrap}
+\end{figure}
+
+\begin{pitfall}[이 히스토그램은 버거의 분포가 아니다]
+\Cref{fig:bootstrap}의 히스토그램은 \textbf{10{,}000개 ``평균''의 분포}이지
+69개 버거의 분포가 아니다. 가로축 범위가 555--690 정도로 좁은 이유가 여기 있다 ---
+개별 버거는 140부터 1240까지 퍼져 있지만, 69개의 평균은 그만큼 흔들리지 않는다.
+이 둘을 혼동하면 ``버거는 전부 600칼로리 근처''라는 완전히 틀린 결론에 이른다.
+\end{pitfall}
+
+\begin{keyidea}
+표본 크기를 키우면 신뢰구간은 \textbf{좁아지고}, 표준편차가 크면 신뢰구간은
+\textbf{넓어진다}. 공식 $\bar{x} \pm z \cdot s/\sqrt{n}$ 에서 $n$ 은 분모에,
+$s$ 는 분자에 있기 때문이다.
+\end{keyidea}
+
+\subsection{두 집단을 비교하기}
+\label{subsec:ci-compare}
+
+\begin{figure}[ht]\centering
+  \includegraphics[width=\linewidth]{05_14_ci_compare.png}
+  \caption{신뢰구간으로 두 집단 비교하기. 두 구간이 겹치지 않으므로 두 평균은
+  통계적으로 다르다($p < 0.05$).}
+  \label{fig:ci-compare}
+\end{figure}
+
+버거의 평균 칼로리는 620이고 $95\%$ 신뢰구간은 $[557,\ 686]$, 치킨너겟은 평균
+275에 신뢰구간 $[211,\ 345]$ 다. 두 구간 사이에는 345와 557 사이의 빈틈이 있다.
+\textbf{겹치지 않으므로} 두 평균이 우연히 다르게 나왔을 가능성은 $5\%$ 미만이다.
+
+\begin{pitfall}[겹친다고 같은 것은 아니다]
+이 판정법은 한 방향으로만 강하다. 구간이 \textbf{겹치지 않으면} 다르다고 말할 수
+있지만, \textbf{겹친다고 해서 같다}고 말할 수는 없다. 겹치는 경우는 ``이 데이터
+로는 판단할 수 없다''는 뜻이고, 정확한 판정에는 별도의 검정이 필요하다.
+\end{pitfall}
+
+% =====================================================================
+\section{형태 고르기 --- 정리}
+\label{sec:choosing-form}
+
+\begin{table}[ht]\centering
+\caption{질문과 형태의 대응. 위에서 아래로 갈수록 데이터를 덜 버린다.}
+\label{tab:form-choice}
+\begin{tabularx}{\linewidth}{@{}l l X@{}}
+\toprule
+묻는 것 & 형태 & 그 형태인 이유 \\
+\midrule
+한 변수의 분포 & 히스토그램(Histogram) & 구간별 개수를 직접 센다 \\
+분포를 겹쳐서 비교 & 밀도 곡선(Density Line) & 겹쳐도 서로를 가리지 않는다 \\
+여러 집단의 분포 & 작은 배수(Small Multiples) & 축을 공유해 비교를 성립시킨다 \\
+집단이 많을 때의 요약 & 에러바(Error Bar) & 중심과 퍼짐만 남겨 자리를 아낀다 \\
+집단의 중심과 퍼짐 & 박스플롯(Box Plot) & 다섯 개 숫자로 요약해 나란히 놓는다 \\
+중앙값의 차이 판정 & 노치 박스플롯(Notched Box Plot) & 불확실성을 상자에 새긴다 \\
+분포의 \emph{모양}까지 & 바이올린(Violin Plot) & 박스가 버린 봉우리를 되살린다 \\
+모든 점을 그대로 & 바코드(Barcode Chart) & 아무것도 버리지 않는다 \\
+추정값의 불확실성 & 신뢰구간(Confidence Interval) & 겹치는지로 차이를 판정한다 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{요약}
+
+\begin{itemize}
+  \item 분위수는 정렬 $\rightarrow$ 위치 부여 $\rightarrow$ 보간으로 계산되며,
+        관측값 중 하나일 필요가 없다(\Cref{ex:quantile}).
+  \item 히스토그램의 구간 개수는 \emph{선택}이고, 선택이 결론을 바꾼다.
+  \item 에러바의 막대가 $\sd$인지 $\mathrm{SE}$인지 $\mathrm{CI}$인지 반드시
+        밝힌다. 길이가 몇 배씩 차이 난다(\Cref{pit:sd-se-ci}).
+  \item 박스플롯은 봉우리 개수를 표현하지 못한다. 의심되면 바이올린이나 바코드로
+        확인한다.
+  \item 신뢰구간이 겹치지 않으면 다르다. 겹친다고 같은 것은 아니다.
+  \item 부트스트랩은 분포 가정 없이 신뢰구간을 구한다. 핵심은 복원추출이다.
+\end{itemize}

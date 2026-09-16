@@ -1,0 +1,203 @@
+% =====================================================================
+%  preamble.tex - 패키지, 폰트, 스타일, semantic 매크로
+%  집필 규칙: ../AUTHORING.md
+%
+%  엔진은 XeLaTeX 고정. 로컬 TeX Live 는 basic 스킴이라 kotex, tcolorbox,
+%  mdframed, framed, siunitx, biblatex 가 없다. 한글은 xeCJK 로 처리한다.
+% =====================================================================
+
+% ---------------------------------------------------------------- 한글
+\usepackage{fontspec}
+\usepackage{xeCJK}
+
+% CJKspace=true 는 필수다. 없으면 한글 단어 사이 띄어쓰기가 사라진다.
+\xeCJKsetup{CJKspace=true}
+
+% 한글 폰트에는 이탤릭 자형이 없다. \analogy{} 가 그냥 무시되지 않도록
+% 기울임을 합성(FakeSlant)한다.
+\setCJKmainfont{Apple SD Gothic Neo}[
+  BoldFont       = {Apple SD Gothic Neo Bold},
+  ItalicFont     = {Apple SD Gothic Neo},
+  ItalicFeatures = {FakeSlant = 0.167},
+]
+\setCJKsansfont{Apple SD Gothic Neo}
+
+% Latin Modern 은 fontconfig 에 이름이 등록되어 있지 않다(basic 스킴).
+% 이름이 아니라 파일명으로 지정해야 XeLaTeX 이 찾는다.
+\setmainfont{lmroman10-regular.otf}[
+  BoldFont       = lmroman10-bold.otf,
+  ItalicFont     = lmroman10-italic.otf,
+  BoldItalicFont = lmroman10-bolditalic.otf,
+]
+\setmonofont{Menlo}[Scale = 0.86]
+
+% 한글은 어절 단위로 끊어지므로 하이픈을 끄고 자간 신축을 허용한다.
+\XeTeXlinebreaklocale ``ko''
+\XeTeXlinebreakskip = 0pt plus 0.1em minus 0.01em
+
+% ---------------------------------------------------------------- 수식
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+
+% ------------------------------------------------------- 표, 그림, 코드
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage[font=small, labelfont=bf]{caption}
+\usepackage{subcaption}
+\usepackage{listings}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, positioning, fit, backgrounds, calc}
+
+% -------------------------------------------------------------- 레이아웃
+\usepackage[a4paper, margin=2.6cm, headheight=14pt]{geometry}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{microtype}
+
+% ------------------------------------------------- 상호참조 (마지막 로드)
+\usepackage{natbib}
+\usepackage[colorlinks = true, linkcolor = bookaccent,
+            citecolor = bookaccent, urlcolor = bookaccent]{hyperref}
+\usepackage{bookmark}
+\usepackage[nameinlink]{cleveref}   % hyperref 뒤에 와야 한다
+
+% =====================================================================
+%  색
+%  hw1 그림들과 같은 팔레트를 쓴다. 책과 그림의 색이 어긋나면 독자가
+%  둘을 다른 출처로 인식한다.
+% =====================================================================
+\definecolor{bookaccent}{HTML}{2A78D6}
+\definecolor{bookwarn}{HTML}{EB6834}
+\definecolor{bookink}{HTML}{0B0B0B}
+\definecolor{bookmuted}{HTML}{52514E}
+\definecolor{bookrule}{HTML}{D9D8D4}
+\definecolor{booksurface}{HTML}{F7F7F5}
+\definecolor{bookwarnbg}{HTML}{FDF1EC}
+\definecolor{bookaccentbg}{HTML}{EDF3FC}
+
+% =====================================================================
+%  Semantic 매크로 (AUTHORING.md 5절)
+%  의미 단위로 표시한다. 스타일은 여기 한 곳에서만 바꾼다.
+% =====================================================================
+\newcommand{\term}[1]{\textbf{#1}}          % 정의되는 개념
+\newcommand{\analogy}[1]{\textit{#1}}       % 비유 표현
+\newcommand{\contains}{\ensuremath{\supset}}% 담김/포함 관계
+
+% 자주 쓰는 수식 기호
+\newcommand{\E}{\operatorname{E}}
+\newcommand{\Var}{\operatorname{Var}}
+\newcommand{\IQR}{\mathrm{IQR}}
+\newcommand{\sd}{\mathrm{SD}}
+
+% =====================================================================
+%  콜아웃 상자
+%  tcolorbox 가 없으므로 \fcolorbox 로 만든다. lrbox 에 담아 두었다가
+%  통째로 그리므로 페이지를 넘지 않는다 - 짧게 쓸 것.
+% =====================================================================
+\newsavebox{\bookcallout}
+\newlength{\bookcalloutwd}
+
+% \newenvironment 의 종료부에서는 #1, #2 를 쓸 수 없다(인자는 시작부에만
+% 전달된다). 그래서 색 이름을 매크로에 담아 두었다가 종료부에서 꺼내 쓴다.
+\newcommand{\calloutborder}{bookaccent}
+\newcommand{\calloutbg}{bookaccentbg}
+
+\newenvironment{calloutbox}[3]%
+  % #1 테두리색  #2 배경색  #3 머리말
+  {\renewcommand{\calloutborder}{#1}\renewcommand{\calloutbg}{#2}%
+   \setlength{\bookcalloutwd}{\dimexpr\linewidth-2\fboxsep-2\fboxrule\relax}%
+   \par\medskip\noindent
+   \begin{lrbox}{\bookcallout}\begin{minipage}{\bookcalloutwd}%
+   \setlength{\parskip}{4pt}%
+   \textbf{\color{#1}#3}\par\nobreak}%
+  {\end{minipage}\end{lrbox}%
+   \setlength{\fboxrule}{1pt}%
+   \fcolorbox{\calloutborder}{\calloutbg}{\usebox{\bookcallout}}\par\medskip}
+
+% 핵심: 그 절에서 반드시 남겨야 할 한 가지
+\newenvironment{keyidea}[1][핵심]%
+  {\begin{calloutbox}{bookaccent}{bookaccentbg}{#1}\color{bookink}}%
+  {\end{calloutbox}}
+
+% 함정: 내가 실제로 틀렸던 것, 또는 틀리기 쉬운 것
+\newenvironment{pitfall}[1][함정]%
+  {\begin{calloutbox}{bookwarn}{bookwarnbg}{#1}\color{bookink}}%
+  {\end{calloutbox}}
+
+% 여담: 본문 흐름에서 빠져도 되는 배경 지식
+\newenvironment{aside}[1][참고]%
+  {\par\medskip\small\color{bookmuted}\noindent\textbf{#1}\quad\ignorespaces}%
+  {\par\normalsize\color{bookink}\medskip\ignorespacesafterend}
+
+% =====================================================================
+%  정리 환경
+% =====================================================================
+\theoremstyle{definition}
+\newtheorem{definition}{정의}[chapter]
+\newtheorem{example}{예제}[chapter]
+\theoremstyle{plain}
+\newtheorem{theorem}{정리}[chapter]
+
+\crefname{definition}{정의}{정의}
+\crefname{example}{예제}{예제}
+\crefname{chapter}{장}{장}
+\crefname{section}{절}{절}
+\crefname{figure}{그림}{그림}
+\crefname{table}{표}{표}
+
+% =====================================================================
+%  시각 스타일
+% =====================================================================
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\color{bookmuted}\nouppercase{\leftmark}}
+\fancyhead[R]{\small\color{bookmuted}\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\headrule}{\color{bookrule}\hrule height 0.4pt}
+\fancypagestyle{plain}{\fancyhf{}%
+  \fancyhead[R]{\small\color{bookmuted}\thepage}%
+  \renewcommand{\headrulewidth}{0pt}}
+
+\titleformat{\chapter}[display]
+  {\normalfont\huge\bfseries\color{bookink}}
+  {\color{bookaccent}\large\chaptertitlename\ \thechapter}{8pt}{\Huge}
+\titlespacing*{\chapter}{0pt}{-20pt}{28pt}
+\titleformat{\section}{\normalfont\Large\bfseries\color{bookink}}
+  {\color{bookaccent}\thesection}{0.7em}{}
+\titleformat{\subsection}{\normalfont\large\bfseries\color{bookink}}
+  {\color{bookaccent}\thesubsection}{0.7em}{}
+
+% ``In brief.'' 블록의 description 라벨을 고정폭으로 세운다 (AUTHORING.md 1.6).
+\newenvironment{inbrief}%
+  {\paragraph{In brief.}%
+   \begin{description}[leftmargin=5.6em, labelsep=0.8em, labelwidth=4.4em,
+     align=left, font={\bfseries\color{bookaccent}}, itemsep=3pt, topsep=4pt,
+     parsep=0pt]}%
+  {\end{description}\medskip}
+
+\lstdefinestyle{book}{
+  basicstyle       = \ttfamily\small,
+  keywordstyle     = \color{bookaccent},
+  commentstyle     = \color{bookmuted}\itshape,
+  stringstyle      = \color{bookwarn},
+  backgroundcolor  = \color{booksurface},
+  frame            = single,
+  rulecolor        = \color{bookrule},
+  breaklines       = true,
+  showstringspaces = false,
+  columns          = fullflexible,
+  xleftmargin      = 10pt,
+  framexleftmargin = 10pt,
+  extendedchars    = true,
+  inputencoding    = utf8,
+}
+\lstset{style=book}
+
+\setlist{itemsep=2pt, topsep=4pt, parsep=0pt}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt}

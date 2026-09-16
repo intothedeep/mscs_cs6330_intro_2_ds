@@ -1,0 +1,56 @@
+\chapter*{머리말}
+\addcontentsline{toc}{chapter}{머리말}
+\markboth{머리말}{머리말}
+
+이 책은 CS 6330 \textit{Introduction to Data Science} 수업을 들으면서
+\textbf{내가 이해한 내용}을 정리한 개인 학습서다. 교재의 요약이 아니라, 과제를
+직접 풀고 그림을 직접 그려 보면서 \emph{왜 그렇게 되는지} 납득한 것만 적는다.
+
+\section*{이 책을 관통하는 비유: 지도}
+
+책 전체에서 하나의 비유를 일관되게 쓴다. 데이터 분석은 \analogy{지도 제작}이다.
+
+\begin{table}[ht]\centering
+\caption{책 전체에서 유지하는 비유 대응표}
+\label{tab:analogy}
+\begin{tabularx}{\linewidth}{@{}l l X@{}}
+\toprule
+개념 & 비유 & 대응의 의미 \\
+\midrule
+데이터(Data) & \analogy{실제 지형} & 있는 그대로의 전부. 너무 커서 한눈에 못 본다 \\
+요약통계(Summary Statistics) & \analogy{지도} & 줄인 것. 줄였으므로 반드시 뭔가를 버렸다 \\
+평균/중앙값(Mean/Median) & \analogy{지도의 중심점} & 어디를 대표로 삼을지의 선택 \\
+퍼짐(Spread) & \analogy{지도의 축척} & 얼마나 넓은 범위를 담고 있는가 \\
+시각화(Visualization) & \analogy{항공사진} & 덜 줄인 것. 지도가 버린 것이 보인다 \\
+분포 가정(Distribution) & \analogy{투영법} & 편리하지만 반드시 왜곡이 따른다 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+이 비유의 핵심은 하나다. \textbf{지도는 지형이 아니다.} 요약통계는 데이터가
+아니고, 줄이는 과정에서 무엇을 버렸는지 모르면 남은 숫자를 잘못 읽는다.
+
+\section*{쓰는 방식}
+
+\begin{itemize}
+  \item \textbf{용어는 병기한다.} 새로 도입하는 개념은 \term{왜도}(Skewness)처럼
+        한국어와 영어를 함께 적는다. 수업과 논문은 영어로 되어 있고, 한국어로만
+        기억하면 나중에 원문을 읽을 때 연결이 끊긴다.
+  \item \textbf{기호는 국제 표기를 그대로 쓴다.} $\mu$, $\sigma$, $\IQR$.
+  \item \textbf{절은 두괄식으로 연다.} 각 절 첫머리의 \textit{In brief.} 블록이
+        Why $\cdot$ When $\cdot$ Where $\cdot$ How 를 한 줄씩 먼저 답한다.
+  \item \textbf{내가 틀렸던 것을 남긴다.} \textbf{함정} 상자의 내용은 대부분 실제로
+        한 번 틀린 것들이다. 맞은 것보다 틀린 것이 나중에 더 쓸모 있다.
+  \item \textbf{그림은 코드로 생성한다.} 손으로 그리거나 값을 타이핑하지 않는다.
+        그림 파일은 과제 폴더에서 직접 가져오므로 코드를 다시 돌리면 책의 그림도
+        함께 갱신된다.
+\end{itemize}
+
+\begin{aside}[읽는 사람에게]
+이 책의 독자는 6개월 뒤의 나다. 그때의 내가 ``이걸 왜 이렇게 했지?''라고 물을
+만한 지점마다 답을 적어 두는 것이 목표다.
+\end{aside}
+
+\vfill
+\noindent\textbf{Taek Lim}\\
+\textit{The University of Texas Rio Grande Valley}

@@ -1,0 +1,58 @@
+\chapter{부록 --- 도구 설정}
+\label{ch:toolchain}
+
+\section{Python 환경}
+\label{sec:python-env}
+
+이 수업의 코드는 \texttt{uv} 로 관리한다. \texttt{pip} 나 \texttt{conda} 는 쓰지
+않는다.
+
+\begin{lstlisting}[language=bash]
+uv venv --python "$(pyenv which python)"   # 가상환경 생성
+uv add pandas matplotlib scipy openpyxl    # 의존성 추가
+uv run python hw1/code/p1.py               # 실행
+\end{lstlisting}
+
+\begin{pitfall}[matplotlib 백엔드]
+이 가상환경에는 \texttt{\_tkinter} 가 없다. 파일만 저장할 때는 \texttt{pyplot} 을
+import 하기 \emph{전에} 백엔드를 고정해야 한다.
+
+\begin{lstlisting}[language=Python]
+import matplotlib
+matplotlib.use("Agg")       # 반드시 pyplot import 앞에
+import matplotlib.pyplot as plt
+\end{lstlisting}
+\end{pitfall}
+
+\section{이 책의 빌드}
+\label{sec:book-build}
+
+\begin{lstlisting}[language=bash]
+cd book_intro_2_ds
+make          # latexmk -xelatex -> main.pdf
+make clean    # 중간 파일 정리 (PDF 는 남김)
+\end{lstlisting}
+
+엔진은 \textbf{XeLaTeX} 이다. 한글 조판에 \texttt{xeCJK} 가 필요하고, 이 기기의
+TeX Live 는 basic 스킴이라 \texttt{kotex} 이 없다. \texttt{pdflatex} 으로는
+빌드되지 않는다.
+
+\begin{aside}[없는 패키지와 그 대체]
+basic 스킴에 \texttt{siunitx}, \texttt{tcolorbox}, \texttt{mdframed},
+\texttt{framed}, \texttt{biblatex} 가 없다. 콜아웃 상자는 \texttt{tcolorbox} 대신
+\texttt{\textbackslash fcolorbox} 로 직접 만들었다(\texttt{preamble.tex}).
+필요하면 \texttt{sudo tlmgr install <패키지>} 로 설치한다.
+\end{aside}
+
+\section{그림 재생성}
+\label{sec:figure-regen}
+
+책의 그림은 복사본이 아니라 과제 폴더를 직접 참조한다(\texttt{main.tex} 의
+\texttt{\textbackslash graphicspath}). 따라서 코드를 다시 돌리면 책도 함께
+갱신된다.
+
+\begin{lstlisting}[language=bash]
+.venv/bin/python hw1/code/p1_figures.py         # fig1-3
+.venv/bin/python hw1/code/p1_stats_figures.py   # q1_fig1-3
+.venv/bin/python hw1/00_lecture_charts/main.py  # 강의 차트 21개
+\end{lstlisting}

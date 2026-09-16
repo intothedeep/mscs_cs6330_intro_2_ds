@@ -1,0 +1,443 @@
+\chapter{기술통계 --- 숫자로 데이터를 요약하기}
+\label{ch:descriptive}
+
+\term{기술통계}(Descriptive Statistics)는 데이터를 몇 개의 숫자로 줄이는
+도구다. \analogy{지도}를 그리는 일이다(\Cref{tab:analogy}). 줄인다는 것은
+반드시 무언가를 버린다는 뜻이고, 무엇을 버렸는지 모르면 남은 숫자를 잘못 읽는다.
+
+이 장은 네 가지 요약값을 다룬다. 중심(Center), 퍼짐(Spread), 비대칭(Skewness),
+그리고 값이 아예 없는 경우(Missing Value)다.
+
+\begin{keyidea}
+요약통계와 그림은 \textbf{한 쌍으로 다녀야 한다}. 요약값은 ``무엇이 일어났는가''
+를 알려 주고, 그림은 ``왜 그런 값이 나왔는가''를 알려 준다. 둘 중 하나만으로
+내린 결론은 이 장에서 계속 반복해서 틀린다.
+\end{keyidea}
+
+% =====================================================================
+\section{중심 --- 평균과 중앙값}
+\label{sec:center}
+
+\begin{inbrief}
+  \item[Why] 데이터 전체를 대표하는 값 하나가 필요하기 때문이다.
+  \item[When] \term{평균}(Mean)은 분포가 대칭일 때, \term{중앙값}(Median)은
+              한쪽으로 치우쳤을 때 쓴다.
+  \item[Where] 소득·가격·반응시간처럼 극단값이 존재하는 데이터에서는 거의 항상
+               중앙값 쪽이 안전하다.
+  \item[How] 왜도를 먼저 계산해 어느 쪽을 쓸지 정한다(\Cref{sec:skewness}).
+\end{inbrief}
+
+\begin{definition}[중심의 두 정의]
+\label{def:center}
+\term{평균}(Mean)은 모든 값을 더해서 개수로 나눈 값이다.
+\[
+  \mu = \frac{1}{n}\sum_{i=1}^{n} x_i
+\]
+\term{중앙값}(Median)은 값을 크기순으로 정렬했을 때 가운데에 오는 값이다.
+\end{definition}
+
+두 값의 차이는 계산식이 아니라 \textbf{극단값(Extreme Value)에 대한 반응}에
+있다. 평균은 모든 값을 실제로 더하므로, 값 하나가 커지면 그 크기만큼 끌려간다.
+중앙값은 ``몇 번째 값인가''만 보므로, 가장 큰 값이 두 배가 되어도 순위가 그대로면
+꿈쩍하지 않는다.
+
+이 성질을 \term{저항성}(Resistance)이라고 한다. 중앙값은 저항성이 있고 평균은
+없다.
+
+\begin{example}[값 하나가 평균을 움직인다]
+\label{ex:resistance}
+다섯 개의 값 $\{1,\ 2,\ 3,\ 4,\ 5\}$ 에서 평균과 중앙값은 모두 3이다.
+마지막 값만 $5 \to 100$ 으로 바꾸면:
+
+\begin{center}
+\begin{tabular}{lrr}
+\toprule
+데이터 & 평균 & 중앙값 \\
+\midrule
+$\{1,2,3,4,5\}$   & 3.0  & 3 \\
+$\{1,2,3,4,100\}$ & 22.0 & 3 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+평균은 7배 넘게 뛰었지만 중앙값은 그대로 3이다. 그리고 바뀐 평균 22는
+\textbf{다섯 개 값 중 네 개보다 크다} --- 대표값으로서 아무 의미가 없다.
+\end{example}
+
+% =====================================================================
+\section{퍼짐 --- 표준편차와 IQR}
+\label{sec:spread}
+
+\begin{inbrief}
+  \item[Why] 중심만으로는 부족하다. 값들이 중심 주변에 모여 있는지 흩어져 있는지를
+             알아야 한다.
+  \item[When] \term{표준편차}(Standard Deviation)는 대칭 분포에서, \term{사분위
+              범위}(Interquartile Range)는 극단값이 있을 때 쓴다.
+  \item[Where] 두 값의 차이가 클수록 그 데이터에 극단값이 많다는 신호다.
+  \item[How] $\sd$ 와 $\IQR$ 을 \emph{둘 다} 계산해 비교한다. 차이 자체가 정보다.
+\end{inbrief}
+
+\begin{definition}[퍼짐의 두 정의]
+\label{def:spread}
+\term{표준편차}(Standard Deviation)는 각 값이 평균에서 떨어진 거리를 제곱해
+평균낸 뒤 제곱근을 취한 값이다.
+\[
+  \sigma = \sqrt{\frac{1}{n-1}\sum_{i=1}^{n}(x_i - \mu)^2}
+\]
+\term{사분위 범위}(Interquartile Range)는 가운데 50\%가 차지하는 폭이다.
+\[
+  \IQR = Q_3 - Q_1
+\]
+\end{definition}
+
+여기서도 대비는 \Cref{sec:center}와 같다. 거리를 \textbf{제곱}하기 때문에
+표준편차는 극단값에 가장 민감하고, 상하위 25\%를 아예 보지 않는 $\IQR$ 은
+극단값에 면역이다.
+
+과제 데이터의 \texttt{sugars}(당류) 변수가 이 차이를 극단적으로 보여준다.
+
+\begin{center}
+\begin{tabularx}{0.85\linewidth}{@{}l r X@{}}
+\toprule
+ & 값 & 이 숫자가 실제로 가리키는 것 \\
+\midrule
+$\sd$  & 21.02 & 밀크셰이크 12개에 끌려 올라간 값 \\
+$\IQR$ &  8.00 & 일반 메뉴가 실제로 차지하는 폭 \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+$\sd = 21.02$ 는 \textbf{실존하지 않는 폭}이다. 대부분의 메뉴는 3--11\,g 사이에
+있고, 21이라는 숫자는 소수의 밀크셰이크가 만들어 낸 것이다.
+
+\subsection{IQR이 이상치를 결정한다}
+\label{subsec:fence}
+
+박스플롯(Box Plot)에서 점으로 찍히는 \term{이상치}(Outlier)는 눈대중이 아니라
+$\IQR$ 로부터 기계적으로 계산된다.
+
+\begin{figure}[ht]\centering
+\begin{tikzpicture}[
+  node distance = 7mm,
+  flowbox/.style = {draw = bookrule, fill = booksurface, rounded corners = 2pt,
+                   minimum width = 34mm, minimum height = 9mm, align = center,
+                   font = \small},
+  arrow/.style  = {-{Stealth[length=2.2mm]}, draw = bookmuted}]
+  \node[flowbox] (q)     {$Q_1 = 3$,\quad $Q_3 = 11$};
+  \node[flowbox, below = of q]  (iqr)   {$\IQR = 11 - 3 = 8$};
+  \node[flowbox, below = of iqr] (fence) {울타리(Fence)\\ $= 11 + 1.5 \times 8 = 23$};
+  \node[flowbox, below = of fence, fill = bookwarnbg, draw = bookwarn] (out)
+        {23을 넘는 12개\\ = 전부 밀크셰이크};
+  \draw[arrow] (q)     -- (iqr);
+  \draw[arrow] (iqr)   -- (fence);
+  \draw[arrow] (fence) -- (out);
+\end{tikzpicture}
+\caption{이상치는 $\IQR$ 에서 기계적으로 유도된다. \texttt{sugars} 변수의 실제
+계산 과정이다.}
+\label{fig:fence-flow}
+\end{figure}
+
+\begin{figure}[ht]\centering
+  \includegraphics[width=\linewidth]{q1_fig2_iqr_boxplot_anatomy.png}
+  \caption{박스플롯의 해부. 상자가 곧 $\IQR$ 이고, 그 $\IQR$ 이
+  \Cref{fig:fence-flow}의 울타리를 통해 어떤 점이 이상치인지를 결정한다. x축은
+  의도적으로 끊었다 --- 실제 비율로 그리면 상자가 전체 폭의 1/5로 찌그러져 각
+  부분에 이름을 붙일 공간이 없다.}
+  \label{fig:iqr-anatomy}
+\end{figure}
+
+\begin{pitfall}[$1.5 \times \IQR$ 은 법칙이 아니다]
+계수 1.5는 통계적으로 유도된 값이 아니라 Tukey가 제안한 \textbf{관례}다
+\citep{tukey1977}. 따라서 ``울타리를 넘었으니 이상치다''가 아니라 "이 관례로는
+이상치로 분류된다"가 정확한 표현이다. 실제로 \Cref{fig:iqr-anatomy}의 12개는
+오류가 아니라 정상적인 밀크셰이크다. \textbf{이상치는 버릴 대상이 아니라 설명할
+대상이다.}
+\end{pitfall}
+
+% =====================================================================
+\section{비대칭 --- 왜도}
+\label{sec:skewness}
+
+\begin{inbrief}
+  \item[Why] 평균을 쓸지 중앙값을 쓸지 \emph{객관적으로} 정하기 위해서다.
+  \item[When] 요약통계표를 만들 때 항상 함께 계산한다.
+  \item[Where] $|\gamma| > 1$ 이면 평균 대신 중앙값을 보고한다.
+  \item[How] 부호는 꼬리의 방향, 크기는 치우친 정도를 뜻한다.
+\end{inbrief}
+
+\begin{definition}[왜도]
+\label{def:skewness}
+\term{왜도}(Skewness)는 분포의 비대칭 정도다.
+\[
+  \gamma = \frac{\E\!\left[(x-\mu)^3\right]}{\sigma^3}
+\]
+\end{definition}
+
+핵심은 \textbf{세제곱}이다. 제곱이면 부호가 사라지므로 표준편차는 퍼진
+\emph{정도}만 잰다. 세제곱은 부호가 살아남는다. 그래서 왜도는 "어느 쪽으로
+퍼졌는가"를 잰다.
+
+\begin{pitfall}[왜도(Skewness)는 편향(Bias)이 아니다]
+\label{pit:bias}
+두 단어가 일상어로는 모두 ``치우침''이지만, 통계학에서는 \textbf{완전히 다른
+개념}이고 서로 바꿔 쓸 수 없다.
+
+\begin{center}
+\begin{tabularx}{\linewidth}{@{}l l X@{}}
+\toprule
+용어 & 무엇의 성질인가 & 정의 \\
+\midrule
+\term{왜도}(Skewness) & \textbf{분포}의 모양 & 분포가 좌우 대칭이 아닌 정도.
+  $\gamma = \E[(x-\mu)^3]/\sigma^3$ \\
+\term{편향}(Bias) & \textbf{추정량}의 정확도 & 추정값의 기댓값이 참값에서
+  벗어난 크기. $\mathrm{Bias}(\hat\theta) = \E[\hat\theta] - \theta$ \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+왜도는 \emph{데이터가 어떻게 생겼는지}를 말하고, 편향은 \emph{내 추정 방법이
+틀렸는지}를 말한다. 완벽하게 편향 없는 방법으로 추정해도 왜도가 큰 분포는
+여전히 왜도가 크다. 반대로 완벽하게 대칭인 정규분포에서도 잘못된 추정량을 쓰면
+편향이 생긴다.
+
+\textbf{혼동이 실제로 일어나는 지점:} 표준편차의 $n-1$ 나눗셈이 바로 \emph{편향}
+보정(Bias Correction)이다. $n$ 으로 나누면 분산이 과소추정되어 편향이 생긴다.
+이것은 왜도와 아무 관련이 없다.
+
+번역어로는 \term{왜도} 또는 \term{비대칭도}가 표준이며, \textbf{편향은 오역}이다.
+\end{pitfall}
+
+\subsection{실제로 계산하는 법 --- $g_1$ 과 $G_1$}
+\label{sec:skew-compute}
+
+\Cref{def:skewness}의 $\gamma$ 는 모집단(Population)의 정의다. 손에 있는 것은 표본이므로
+실제로 계산하는 값은 두 단계를 거친다.
+
+\textbf{1단계. 보정 없는 표본 왜도 $g_1$.} 정의식의 기댓값을 표본 평균으로 바꾼다.
+$k$차 \term{중심적률}(Central Moment)을 $m_k = \frac{1}{n}\sum_{i=1}^{n}(x_i - \bar{x})^k$
+라 하면
+\[
+  g_1 = \frac{m_3}{m_2^{3/2}} .
+\]
+
+\textbf{2단계. 표본 보정 $G_1$.} $g_1$ 은 표본에서 왜도를 과소추정하므로 계수를 곱한다.
+\[
+  G_1 = \frac{\sqrt{n(n-1)}}{n-2}\; g_1 .
+\]
+이 $G_1$ 이 \term{조정된 Fisher-Pearson 표준화 적률계수}(Adjusted Fisher-Pearson
+Standardized Moment Coefficient)이고, \texttt{pandas} 의 \texttt{.skew()} 가 돌려주는 값이다.
+
+손으로 구하는 절차는 다섯 줄이다.
+
+\begin{enumerate}
+  \item 평균 $\bar{x}$ 를 구한다.
+  \item 편차의 제곱을 모두 더해 $n$ 으로 나눈다. 이것이 $m_2$ 다.
+  \item 편차의 세제곱을 모두 더해 $n$ 으로 나눈다. 이것이 $m_3$ 다.
+  \item $g_1 = m_3 / m_2^{1.5}$ 를 계산한다.
+  \item $\sqrt{n(n-1)}/(n-2)$ 를 곱해 $G_1$ 을 얻는다.
+\end{enumerate}
+
+\begin{example}[다섯 개 값으로 끝까지 계산하기]
+\label{ex:skew-by-hand}
+데이터 $\{1,\ 2,\ 3,\ 4,\ 10\}$, $n = 5$ 이다.
+
+\begin{center}
+\begin{tabular}{lrrr}
+\toprule
+$x_i$ & $x_i - \bar{x}$ & $(x_i-\bar{x})^2$ & $(x_i-\bar{x})^3$ \\
+\midrule
+1  & $-3$ & 9  & $-27$ \\
+2  & $-2$ & 4  & $-8$  \\
+3  & $-1$ & 1  & $-1$  \\
+4  & $0$  & 0  & $0$   \\
+10 & $6$  & 36 & $216$ \\
+\midrule
+합 & $0$ & 50 & 180 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+평균은 $\bar{x} = 20/5 = 4$ 다. 이어서
+
+\begin{align*}
+  m_2 &= 50/5 = 10, \qquad m_3 = 180/5 = 36, \\
+  g_1 &= \frac{36}{10^{1.5}} = \frac{36}{31.6228} = 1.1384, \\
+  G_1 &= \frac{\sqrt{5 \cdot 4}}{3}\, g_1 = 1.4907 \times 1.1384 = 1.6971 .
+\end{align*}
+
+\texttt{pd.Series([1,2,3,4,10]).skew()} 가 정확히 $1.6971$ 을 돌려준다.
+
+편차 세제곱 열을 보면 왜도가 어디서 오는지 한눈에 보인다. 값 10 하나가 $+216$ 을
+만들고 나머지 넷이 합쳐서 $-36$ 밖에 못 만든다. \textbf{세제곱이 먼 값에 압도적인
+가중치를 준다.}
+\end{example}
+
+보정 계수 $\sqrt{n(n-1)}/(n-2)$ 는 $n$ 이 커지면 1로 수렴한다. \Cref{ex:skew-by-hand}
+처럼 $n=5$ 면 1.49로 크지만, 이 책의 데이터처럼 $n=126$ 이면 1.0121이라 $g_1$ 과 $G_1$ 의
+차이는 1\% 남짓이다.
+
+\begin{center}
+\begin{tabular}{lr}
+\toprule
+\texttt{sugars} 의 왜도 계산 방식 & 값 \\
+\midrule
+$g_1$ (보정 전)                                  & 2.6765 \\
+$G_1$ (보정 후)                                  & 2.7088 \\
+$m_3 / s^3$ (분모만 $\mathrm{ddof}=1$)           & 2.6447 \\
+\texttt{pandas .skew()}                          & 2.7088 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{pitfall}[분자와 분모의 나눗셈을 섞지 않는다]
+위 표의 셋째 줄 $m_3/s^3$ 는 흔한 오답이다. 분모에는 표본표준편차($\mathrm{ddof}=1$,
+$n-1$ 로 나눔)를 쓰면서 분자 $m_3$ 는 $n$ 으로 나눈 값이라, \textbf{어느 정의와도
+일치하지 않는다}. $m_2$ 와 $m_3$ 는 둘 다 $n$ 으로 나누고, 보정은 마지막에 계수로
+한 번만 한다.
+\end{pitfall}
+
+\subsection{부호와 방향}
+
+\begin{center}
+\begin{tabularx}{\linewidth}{@{}l l l X@{}}
+\toprule
+부호 & 이름 & 모양 & 평균과 중앙값의 관계 \\
+\midrule
+$\gamma > 0$ & 우측 왜도(Right-skewed) & 오른쪽 꼬리가 김 & 평균 $>$ 중앙값 \\
+$\gamma = 0$ & 대칭(Symmetric)         & 종 모양         & 평균 $=$ 중앙값 \\
+$\gamma < 0$ & 좌측 왜도(Left-skewed)  & 왼쪽 꼬리가 김  & 평균 $<$ 중앙값 \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+왜 평균만 끌려가는지는 \Cref{ex:resistance}에서 이미 봤다. 그래서 왜도는
+그림에서 \textbf{두 세로선 사이의 틈}으로 나타난다.
+
+\begin{figure}[ht]\centering
+  \includegraphics[width=\linewidth]{q1_fig1_skewness_mean_vs_median.png}
+  \caption{왜도를 눈으로 보는 법. 왜도가 커질수록($0.24 \to 2.71$) 중앙값(검정
+  실선)과 평균(주황 점선) 사이의 틈이 벌어진다.}
+  \label{fig:skew-gap}
+\end{figure}
+
+\begin{pitfall}[틈은 반드시 SD 단위로 비교한다]
+원래 단위로 재면 거짓말이 된다. \texttt{sodium}(나트륨)의 틈은 43.75\,mg이고
+\texttt{sugars}(당류)의 틈은 6.29\,g이지만, 왜도는 0.42 대 2.71로 정반대다.
+단위가 다르기 때문이다. $(\mu - \mathrm{median})/\sigma$ 로 표준화해야
+0.08 대 0.30이 되어 왜도와 순서가 맞는다. \Cref{fig:skew-gap}의 각 패널에
+적힌 \texttt{gap} 값이 이 표준화된 값이다.
+\end{pitfall}
+
+\subsection{판단 기준}
+
+\begin{center}
+\begin{tabular}{@{}ll@{}}
+\toprule
+$|\gamma| < 0.5$        & 거의 대칭 --- 평균 + 표준편차 \\
+$0.5 \le |\gamma| \le 1$ & 중간 --- 평균도 쓸 만하나 주의 \\
+$|\gamma| > 1$          & 강한 왜도 --- \textbf{중앙값 + $\IQR$} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\texttt{sugars} 는 $\gamma = 2.71$ 이고, 결정적으로 \textbf{평균 13.29가
+$Q_3 = 11$ 보다 크다}. 즉 전체의 82.5\%가 ``평균 이하''다. 평균이라는 단어의
+일상적 의미가 깨진 상태다(\Cref{ex:resistance}의 22와 같은 상황이다).
+
+\begin{pitfall}[왜도의 정의는 하나가 아니다]
+과목에 따라 \term{Pearson 제2 왜도계수}(Pearson's Second Skewness Coefficient)를
+가르치기도 한다.
+\[
+  \mathrm{Sk}_2 = \frac{3(\bar{x} - \mathrm{median})}{s}
+\]
+같은 데이터에서 이 값은 \texttt{serving\_size} 0.19, \texttt{calories} 0.21,
+\texttt{sodium} 0.25, \texttt{sugars} 0.90 이다. 부호는 $G_1$ 과 같지만 크기가 전혀
+다르다. \texttt{sugars} 가 2.71이 아니라 0.90으로 나오므로, 위의 ``$|\gamma| > 1$ 이면
+중앙값'' 기준을 그대로 적용하면 \textbf{판정이 뒤집힌다}. 두 지표는 스케일이 다르니
+임계값을 섞어 쓰면 안 된다.
+\end{pitfall}
+
+\begin{aside}
+R로 교차검증한다면 패키지마다 정의가 다르다는 점을 예상해야 한다.
+\texttt{e1071::skewness(type = 2)} 가 \texttt{pandas} 와 같은 $G_1$ 이고,
+\texttt{moments::skewness()} 는 보정 없는 $g_1$ 을 돌려준다. \texttt{sugars} 에서
+2.7088과 2.6765의 차이로 나타난다.
+\end{aside}
+
+\begin{pitfall}[왜도는 모양을 알려 주지 않는다]
+$\gamma = 2.71$ 만 보면 ``완만하게 늘어진 긴 꼬리''를 상상하게 된다. 실제로는
+0--20\,g에 114개, 56--93\,g에 12개가 있고 \textbf{그 사이 20--56\,g은 완전히
+비어 있다}. 왜도는 ``평균을 쓸까 중앙값을 쓸까''를 정해 주는 스위치일 뿐,
+분포의 모양은 반드시 그림으로 확인해야 한다 --- \analogy{지도}로는 보이지 않고
+\analogy{항공사진}이 필요한 지점이다.
+\end{pitfall}
+
+\begin{figure}[ht]\centering
+  \includegraphics[width=\linewidth]{q1_fig3_skew_cause_two_populations.png}
+  \caption{왜도 2.71의 정체. 긴 꼬리가 아니라 구멍을 사이에 둔 두 집단
+  (Mixture of Two Populations)이다.}
+  \label{fig:two-populations}
+\end{figure}
+
+% =====================================================================
+\section{결측값 --- 0은 결측이 아니다}
+\label{sec:missing}
+
+\begin{inbrief}
+  \item[Why] 0과 결측을 섞으면 계산은 조용히 성공하고 결과만 틀린다.
+  \item[When] 데이터를 처음 받아 \texttt{isna()} 를 돌린 직후에 판단한다.
+  \item[Where] 센서 데이터, 설문 응답, 의료 기록처럼 0이 ``없음''의 코드로 쓰이는
+               분야에서 특히 위험하다.
+  \item[How] ``이 변수에서 0이 \emph{물리적으로 가능한 값인가}''를 묻는다.
+\end{inbrief}
+
+\term{결측값}(Missing Value)은 \textbf{값이 기록되지 않았다}는 뜻이다. 0은
+\textbf{측정했더니 0이었다}는 뜻이다. 둘은 완전히 다른 정보이고, 섞으면 복구할
+수 없다.
+
+\begin{example}[0을 결측으로 처리하면]
+\label{ex:zero-as-missing}
+과제 데이터에서 \texttt{sugars == 0} 인 항목은 17개이고, 전부 감자튀김(10개)과
+치킨너겟(7개)이다. 이들은 실제로 당류가 없는 음식이다. 이를 결측으로 바꾸면:
+
+\begin{center}
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+ & $n$ & 평균 & 중앙값 & $\IQR$ \\
+\midrule
+0을 값으로 (옳음)   & 126 & 13.29 & 7.0 & 8.0 \\
+0을 결측으로 (틀림) & 109 & 15.36 & 8.0 & 6.0 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+감자튀김의 당류 중앙값이 0\,g에서 1.15\,g으로 바뀐다. \textbf{당류가 없는
+음식이 당류를 가진 것처럼 보이게 된다.} 게다가 $n$ 이 126에서 109로 줄어
+``결측 없는 데이터''라는 사실 자체가 사라진다.
+\end{example}
+
+\begin{keyidea}
+판단 기준은 하나다. \textbf{그 0이 물리적으로 가능한 값인가?}
+
+\begin{itemize}
+  \item 당류 0\,g, 강수량 0\,mm, 사고 건수 0건 $\rightarrow$ \textbf{가능하다. 값이다.}
+  \item 혈압 0, 키 0\,cm, 성인 나이 0세 $\rightarrow$ \textbf{불가능하다.} 결측을
+        0으로 채워 넣은 흔적일 가능성이 높다.
+\end{itemize}
+
+후자의 경우에만 \verb|df.replace(0, np.nan)| 이 정당하다.
+\end{keyidea}
+
+% =====================================================================
+\section{요약}
+
+\begin{itemize}
+  \item 평균과 표준편차는 극단값에 끌려가고, 중앙값과 $\IQR$ 은 저항한다
+        (\Cref{def:center}, \Cref{def:spread}).
+  \item 왜도가 어느 쪽을 쓸지 결정한다. $|\gamma| > 1$ 이면 중앙값이다.
+  \item 왜도(Skewness)와 편향(Bias)은 다른 개념이다(\Cref{pit:bias}).
+  \item 왜도는 ``얼마나 치우쳤나''만 알려 준다. \emph{왜} 치우쳤는지는 그림의 몫이다
+        (\Cref{fig:two-populations}).
+  \item 0과 결측은 다르다. 0이 물리적으로 가능한지를 먼저 묻는다
+        (\Cref{ex:zero-as-missing}).
+\end{itemize}

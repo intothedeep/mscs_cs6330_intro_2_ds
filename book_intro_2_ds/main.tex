@@ -1,0 +1,55 @@
+% !TeX program = xelatex
+% !TeX encoding = UTF-8
+% !BIB program = bibtex
+%
+% =====================================================================
+%  CS 6330 - Introduction to Data Science
+%  개인 학습서: 개념 정리 · 과제 기록 · 프로젝트 로그
+%
+%  저자 : Taek Lim
+%  빌드 : latexmk -xelatex main.tex   (또는 make)
+%  규칙 : ../AUTHORING.md
+%
+%  구조 (AUTHORING.md 3절)
+%    preamble.tex   패키지 · 폰트 · 스타일 · semantic 매크로
+%    parts/         파트별 \input 묶음
+%    chapters/      NN-slug.tex - 한 장에 한 파일
+%    bib/           references.bib
+% =====================================================================
+\documentclass[11pt, oneside]{book}
+
+\input{preamble}
+
+% 그림은 복사하지 않고 과제 폴더를 직접 참조한다. 코드를 다시 돌려 그림을
+% 갱신하면 다음 빌드에서 책에도 그대로 반영된다.
+\graphicspath{%
+  {figures/}%
+  {../hw1/figures/}%
+  {../hw1/00_lecture_charts/figures/}%
+}
+
+\title{\Huge\bfseries 데이터 사이언스 입문\\[4pt]
+       \Large \textit{Introduction to Data Science}\\[10pt]
+       \large 개념 정리 $\cdot$ 과제 기록 $\cdot$ 프로젝트 로그}
+\author{Taek Lim}
+\date{CS 6330 \textperiodcentered\ \today}
+
+\begin{document}
+
+\frontmatter
+\maketitle
+\input{chapters/00-preface}
+\tableofcontents
+
+\mainmatter
+\input{parts/part1-foundations}
+\input{parts/part2-practice}
+
+\appendix
+\input{parts/part3-appendix}
+
+\backmatter
+\bibliographystyle{plainnat}
+\bibliography{bib/references}
+
+\end{document}

@@ -1,0 +1,58 @@
+\chapter{분포 --- 데이터가 따르는 모양}
+\label{ch:distributions}
+
+\begin{keyidea}
+분포를 가정하는 것은 \analogy{투영법}을 고르는 일이다. 편리해지지만 반드시
+왜곡이 따르고, 어디가 왜곡되었는지는 검증해야만 알 수 있다.
+\end{keyidea}
+
+% =====================================================================
+\section{정규분포}
+\label{sec:normal}
+
+\begin{inbrief}
+  \item[Why] % TODO
+  \item[When] % TODO
+  \item[Where] % TODO
+  \item[How] % TODO
+\end{inbrief}
+
+\begin{definition}[정규분포]
+\label{def:normal}
+\term{정규분포}(Normal Distribution) $X \sim \mathcal{N}(\mu, \sigma^2)$ 의
+확률밀도함수(Probability Density Function)는
+\[
+  f(x) = \frac{1}{\sigma\sqrt{2\pi}}
+         \exp\!\left(-\frac{(x-\mu)^2}{2\sigma^2}\right)
+\]
+\end{definition}
+
+% TODO: 06_01_normal_fit.png, 06_02_normal_sigma_bands.png
+% 68-95-99.7 규칙과, 이 데이터에서 실제로 몇 %가 들어갔는지(96.0%).
+
+\begin{pitfall}[정규성 검정의 함정]
+같은 표본에서 $\mu, \sigma$ 를 추정한 뒤 그 표본으로 KS 검정(Kolmogorov--Smirnov
+Test)을 하면 p-value가 낙관적으로 나온다. 이 경우 Shapiro--Wilk 검정을 쓴다.
+% TODO: calories 의 Shapiro p = 0.00038 -- 정규성이 기각된 사례로 정리.
+\end{pitfall}
+
+\section{지수분포}
+\label{sec:exponential}
+% TODO: $\lambda = 1/\text{mean}$, 06_04_exponential_fit.png
+
+\section{균등분포}
+\label{sec:uniform}
+% TODO: 06_05_uniform_reference.png
+% 주의: serving_size 는 균등분포가 아니다
+%       (CDF 최대격차 0.153 > 정규분포의 0.101).
+
+\section{베르누이와 이항분포}
+\label{sec:binomial}
+% TODO: 06_07_bernoulli_binomial.png
+
+\section{누적분포함수로 비교하기}
+\label{sec:cdf}
+% TODO: 06_03_cdf.png -- 두 곡선의 최대 세로 격차가 KS 통계량 $D$.
+
+\section{요약}
+% TODO

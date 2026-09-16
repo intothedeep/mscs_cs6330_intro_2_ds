@@ -1,0 +1,235 @@
+\chapter{과제 1 --- 패스트푸드 영양 데이터}
+\label{ch:hw1}
+
+\begin{aside}
+결과 자체는 제출본(\texttt{hw1/report/})에 있다. 이 장에는 \textbf{판단의 과정}을
+남긴다 --- 무엇을 망설였고, 왜 그렇게 정했는지.
+\end{aside}
+
+\section{데이터}
+\label{sec:hw1-data}
+
+126개 메뉴, 8개 변수, 12개 식당, 6개 음식 유형, 결측값 0개.
+관계를 수로 적으면: 6개 유형이 126개 메뉴를 담고 \contains, 그중 버거가 69개로
+절반이 넘는다.
+
+\section{Q1 --- 어떤 요약통계가 ``적절한가''}
+\label{sec:hw1-q1}
+
+문제는 \textit{appropriate} descriptive statistics를 요구했다. ``적절''의 기준을
+스스로 정해야 했고, 왜도를 기준으로 삼았다(\Cref{sec:skewness}).
+% TODO: 판단 근거를 더 쓸 것.
+
+\section{Q2 --- 전체 레코드를 보는 이유}
+\label{sec:hw1-q2}
+
+첫 번째 망설임은 범위였다. 최소·최대 칼로리 항목을 \emph{나트륨 상위 5개 안에서}
+찾아야 하는지, \emph{126개 전체에서} 찾아야 하는지가 문제 문장만 봐서는 애매했다.
+문제 원문을 다시 읽어 결정했다. ``Then identify the minimum- and maximum-calorie menu
+items''에는 범위를 제한하는 수식어가 없으므로 전체 126개가 맞다. 상위 5개 안에서
+찾았다면 910과 1140이 나왔을 것이고, 실제 답인 130과 1240과는 전혀 다른 값이다.
+
+\begin{pitfall}[완전한 레코드(Complete Record)와 완전한 케이스(Complete Case)]
+\term{완전한 레코드}(Complete Record)는 \textbf{행 하나를 8개 변수 전부로 보는 것}이다.
+\term{완전한 케이스}(Complete Case)는 결측값이 없는 행만 남기는 것(\texttt{dropna()})으로,
+전혀 다른 개념이다. 이 문제가 요구한 것은 앞쪽이다.
+\end{pitfall}
+
+레코드 전체를 봐야 하는 이유는 \term{에너지 밀도}(Energy Density)로 설명된다. 칼로리
+최대 항목은 1240\,kcal이고 최소 항목은 130\,kcal이라 \textbf{9.54배} 차이지만, 무게로
+나누면 $1240/396 \approx 3.13$\,kcal/g 대 $130/57 \approx 2.28$\,kcal/g로 \textbf{1.37배}
+차이에 불과하다. 즉 차이의 대부분은 음식의 성질이 아니라 \textbf{분량}에서 온다.
+
+\begin{example}[분량과 밀도를 분해하기]
+\label{ex:hw1-density}
+두 항목의 밀도가 같다면 칼로리 비는 분량 비인 $396/57 \approx 6.95$배여야 한다.
+실제 칼로리 비는 9.54배다. 초과분 $9.54/6.95 \approx 1.37$배가 밀도 차이이고,
+나머지가 분량 차이다. 분량이 지배적이다.
+\end{example}
+
+\texttt{fat} 변수를 함께 보면 한 걸음 더 간다. 최대 항목의 지방은 87\,g이고
+$87 \times 9 = 783$\,kcal이므로, 1240\,kcal 중 약 \textbf{63\%}가 지방에서 온다.
+칼로리 숫자 하나만으로는 ``어디서 온 칼로리인가''를 물을 수조차 없다.
+
+반대로 나트륨 상위 5개 표에는 \texttt{serving\_size}가 없다. 5개 변수만 보고하도록
+정해져 있기 때문이다. 그래서 그 다섯 항목은 그램당 비교가 불가능하고, 이것이 바로
+완전한 레코드가 보존하는 정보다.
+
+\begin{keyidea}
+극단값 하나는 \textbf{얼마나 큰가}만 말한다. \textbf{무엇인가}는 같은 행의 다른
+변수들이 말하고, \textbf{분포의 어디쯤인가}는 Q1의 요약통계가 말한다. 축이 둘이다.
+\end{keyidea}
+
+\section{Q3 --- 동점 처리}
+\label{sec:hw1-q3}
+
+조건은 \texttt{calories < 500} \textbf{그리고} \texttt{sodium < 1000}이고, 두 조건을
+동시에 만족하는 항목은 126개 중 \textbf{49개}다. 각각 따로 세면 칼로리 조건만 60개,
+나트륨 조건만 68개다. AND가 49개로 줄이는 폭이 곧 두 조건이 서로 다른 항목을 걸러낸다는
+뜻이다.
+
+동점은 최상위에서 일어났다. Jack in the Box와 White Castle이 각각 7개로 같다. 표에
+12개 식당을 전부 실었으므로 동점은 자동으로 모두 보고되지만, \texttt{head(1)}이나
+\texttt{idxmax()}로 1위만 뽑았다면 둘 중 하나가 조용히 사라졌을 것이다. 같은 문제가
+Q6와 Q7에서 다시 나온다(\Cref{sec:hw1-q6}, \Cref{sec:hw1-q7}).
+
+더 중요한 판단은 \textbf{이 표의 한 행이 무엇을 세는가}였다. 개수(Count)이지 비율(Rate)이
+아니다.
+
+\begin{table}[htbp]
+\centering
+\begin{tabular}{lrrr}
+\toprule
+식당(Restaurant) & 해당 항목 수 & 전체 메뉴 수 & 비율 \\
+\midrule
+White Castle    & 7 & 10 & 70.0\% \\
+Chick-fil-A     & 3 & 5  & 60.0\% \\
+Jack in the Box & 7 & 13 & 53.8\% \\
+Hardee's        & 2 & 12 & 16.7\% \\
+\bottomrule
+\end{tabular}
+\caption{개수 순위와 비율 순위는 일치하지 않는다. Chick-fil-A는 개수로 7위지만 비율로는
+2위다.}
+\label{tab:hw1-count-vs-rate}
+\end{table}
+
+\Cref{tab:hw1-count-vs-rate}가 보여주듯, 메뉴가 많은 식당은 단지 항목이 많다는 이유로
+상위에 오른다. ``가벼운 메뉴가 많은 식당''을 묻는 표가 아니다.
+
+\begin{pitfall}[0인 그룹은 행 자체가 사라진다]
+\texttt{value\_counts()}는 해당 항목이 하나도 없는 식당을 0으로 표시하지 않고 \textbf{아예
+빼 버린다}. 이번에는 12개 식당 모두 1개 이상이라 문제가 없었지만, 일반적으로는
+\texttt{reindex(..., fill\_value=0)}으로 0 행을 복원해야 한다.
+\end{pitfall}
+
+\section{Q4--Q5 --- 평균이 비교 가능하지 않은 경우}
+\label{sec:hw1-q45}
+
+Q4에서 버거는 평균 칼로리가 가장 높았지만(620.20), 동시에 가장 넓게 퍼져 있었다.
+평균이 대표값 노릇을 못 한다는 뜻이다.
+
+\begin{table}[htbp]
+\centering
+\begin{tabular}{lrrrr}
+\toprule
+음식 유형(Food Type) & 평균 & SD & 최소 & 최대 \\
+\midrule
+Burger    & 620.20 & 277.16 & 140 & 1240 \\
+Milkshake & 606.67 & 98.84  & 430 & 800  \\
+\bottomrule
+\end{tabular}
+\caption{평균은 13.53밖에 차이가 없지만 SD는 약 3배 차이다. ``밀크셰이크''는 칼로리를
+좁게 예측하게 해 주고, ``버거''는 거의 아무것도 말해 주지 않는다.}
+\label{tab:hw1-burger-vs-shake}
+\end{table}
+
+SD는 퍼짐의 크기를 재고, 최소·최대는 그 퍼짐이 실제로 어떤 메뉴를 담고 있는지 보여준다.
+두 값은 같은 말의 반복이 아니라 역할이 다르다. 버거의 범위 140--1240은 데이터셋 전체
+범위인 130--1240을 거의 그대로 덮는다.
+
+전체 126개의 평균 칼로리는 532.49인데, 6개 유형 평균의 단순 평균은 457.60이다. 두 값이
+다른 이유는 버거가 126개 중 69개로 절반을 넘기 때문이다. \textbf{그룹 평균의 평균은
+전체 평균이 아니다.}
+
+Q5의 식당별 평균도 같은 함정을 안고 있다. 평균이 다른 이유는 두 가지가 섞여 있다.
+같은 종류 음식을 더 고칼로리로 만들어서일 수도 있고(실제로 궁금한 것), 메뉴 구성이
+달라서일 수도 있다(관심 없는 것). 평균 하나만으로는 구분되지 않는다.
+
+\begin{example}[Chick-fil-A가 최저인 진짜 이유]
+\label{ex:hw1-menu-mix}
+\texttt{crosstab}으로 식당 $\times$ 유형 구성을 보면, 12곳 중 10곳이 똑같은 구성이다.
+breaded chicken 1, grilled chicken 1, nuggets 1, fries 1, milkshake 1에 버거만 5--8개로
+다르다. 나머지 두 곳이 예외다. Chick-fil-A는 \textbf{버거가 0개}이고, In-N-Out Burger는
+버거 3개에 fries와 milkshake 하나씩, 총 5개뿐이다.
+
+Chick-fil-A의 평균 330.00이 최저인 것은 음식이 가벼워서가 아니라 \textbf{가장 고칼로리인
+유형이 메뉴에 없어서}다.
+\end{example}
+
+정리하면 식당 평균을 읽을 때 확인할 것이 넷이다. 첫째, 무엇의 평균인가(전체 메뉴가
+아니라 데이터셋에 실린 항목의 평균이다). 둘째, 교란 변수(Confounding Variable)가
+있는가(메뉴 구성이 그것이다). 셋째, $n$이 충분한가(In-N-Out Burger는 5개뿐이다). 넷째,
+그래서 어떻게 비교해야 하는가. 마지막 답이 Q6, 즉 음식 유형을 고정하고 비교하는 것이다.
+
+\section{Q6 --- \texttt{idxmin()} 을 쓰지 않은 이유}
+\label{sec:hw1-q6}
+
+각 음식 유형에서 평균 칼로리가 가장 낮은 식당을 찾는 방법은 여러 가지이고, 이 데이터에서는
+셋 다 똑같이 6행을 돌려준다.
+
+\begin{lstlisting}[language=Python]
+g.loc[g.groupby("type").mean_cal.idxmin()]
+g.sort_values("mean_cal").groupby("type").head(1)
+g[g.mean_cal == g.groupby("type").mean_cal.transform("min")]
+\end{lstlisting}
+
+앞의 둘은 유형마다 한 행만 남기므로, 두 식당이 최저 평균을 공유하면 하나가 경고 없이
+버려진다. 세 번째만 최소값과 같은 모든 행을 돌려준다. \textbf{앞의 두 방법은 이미 버그가
+있는데 데이터가 그 버그를 가려주고 있는 상태}다.
+
+\begin{keyidea}
+문제가 ``동점이 없더라도 동점 처리 방식을 서술하라''고 요구한 이유가 여기 있다.
+동점이 없으니 \textbf{출력만 봐서는 내 코드가 안전한지 알 수 없다}. 결과가 우연히
+맞는 것과 절차가 옳은 것은 다르다.
+\end{keyidea}
+
+두 번째 판단은 조합 표를 어떻게 보여줄 것인가였다. 식당 12곳 $\times$ 유형 6개
+$= 72$개 격자 중 실제로 존재하는 조합은 68개다. 없는 4개는 In-N-Out Burger의 breaded
+chicken, grilled chicken, nuggets와 Chick-fil-A의 버거다. 존재하는 68개 조합이 126개
+메뉴를 담고 \contains, 내역은 버거 조합 11개가 69개를, 나머지 57개 조합이 하나씩 57개를
+차지한다.
+
+없는 조합을 표에 0으로 채워 72행을 모두 보여주기로 했다. 다만 \textbf{최소값 계산은
+0을 채우기 전의 68개 조합에서만} 한다. 0을 포함하면 nuggets의 최저가 In-N-Out Burger의
+0.00이 되어 ``0칼로리 너겟을 판다''는 뜻이 되기 때문이다. 표시용 격자와 계산용 표를
+분리한 셈이다.
+
+\section{Q7 --- 조용히 실패하는 버그}
+\label{sec:hw1-q7}
+
+주어진 코드는 다음과 같았다.
+
+\begin{lstlisting}[language=Python]
+df.groupby('restaurant')['calories'].mean().sort_values().head(1)
+\end{lstlisting}
+
+\texttt{sort\_values()}의 기본값이 오름차순이므로 \texttt{head(1)}은 최대가 아니라
+\textbf{최소}를 집는다. 결과는 White Castle 319.00, 즉 정렬표의 마지막 행이다. 정답은
+첫 행인 Hardee's 691.67이다. \texttt{ascending=False}를 더하면 고쳐진다.
+
+이 버그가 위험한 이유는 \textbf{에러가 나지 않기} 때문이다. 문법적으로 완전하고 출력도
+그럴듯한 한 행이라, 반대 질문에 답하고 있다는 사실이 드러나지 않는다.
+
+수정이 맞다는 것은 정렬을 쓰지 않는 두 경로로 교차 확인했다. \texttt{idxmax()}와
+\texttt{nlargest(1)}이 같은 Hardee's 691.67을 주고, \texttt{idxmin()}은 버그의 출력인
+White Castle 319.00을 그대로 재현한다. 즉 결함은 정렬 방향 하나뿐이었고 그룹화와 평균은
+처음부터 옳았다.
+
+\begin{pitfall}[고친 뒤에도 남는 문제]
+\texttt{head(1)}과 \texttt{idxmax()}는 동점이어도 한 행만 돌려준다. 최대값과 같은 모든
+행을 남기려면 \texttt{s[s == s.max()]}로 비교해야 한다. Q6에서 쓴 것과 같은 규칙이다.
+\end{pitfall}
+
+Q6와 Q7은 짝을 이룬다. Q7은 \textbf{이미 틀린 코드를 고치는} 문제이고, Q6는 \textbf{아직
+틀리지 않았지만 틀릴 수 있는 코드를 미리 막는} 문제다. 배점이 8점과 23점으로 갈리는
+이유도 여기 있다고 본다.
+
+\section{이 과제에서 배운 것}
+\label{sec:hw1-learned}
+
+세 가지가 문제를 바꿔 가며 반복해서 나왔다.
+
+\textbf{한 행만 돌려주는 선택자는 조용히 정보를 버린다.} \texttt{idxmin()},
+\texttt{idxmax()}, \texttt{head(1)}이 모두 그렇다. Q2의 최소·최대 항목, Q3의 동점 1위,
+Q6의 유형별 최저, Q7의 최고 평균에서 같은 위험이 나왔고, 해법도 매번 같았다. 값과
+비교하는 불리언 마스크(Boolean Mask)를 쓴다.
+
+\textbf{개수와 평균은 구성(Composition)을 숨긴다.} Q3의 식당별 개수는 메뉴 크기를,
+Q5의 식당별 평균은 메뉴 구성을 숨겼다. 두 경우 모두 숨겨진 쪽이 순위를 만들고 있었다.
+
+\textbf{값 하나가 아니라 레코드를 본다.} Q2에서 \texttt{serving\_size}가 있어야 그램당
+비교가 가능했고, \texttt{fat}이 있어야 칼로리의 출처를 물을 수 있었다.
+
+마지막으로 절차상의 규칙 하나. 과제가 ``결과를 손으로 타이핑하지 말고 프로그램으로
+생성하라''고 요구했으므로, 리포트의 표는 모두 pandas 출력에서 LaTeX 행으로 직접 찍어
+넣었다. 68행짜리 조합 표처럼 큰 표에서는 이 방식만이 오타를 원천적으로 막는다.

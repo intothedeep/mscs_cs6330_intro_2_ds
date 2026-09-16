@@ -1,0 +1,220 @@
+\chapter{속성 유형 --- 값의 종류를 먼저 가른다}
+\label{ch:attributes}
+
+같은 숫자라도 무엇을 뜻하느냐에 따라 허용되는 계산이 다르다. 우편번호
+78539와 칼로리 540은 둘 다 숫자로 저장되지만, 우편번호의 평균은 아무 의미가
+없다. \term{속성 유형}(Attribute Type)을 먼저 가르는 이유는 여기에 있다.
+어떤 요약값이 \emph{합법}인지가 여기서 결정된다.
+
+\begin{keyidea}
+속성 유형은 데이터를 예쁘게 분류하려는 작업이 아니다. \textbf{그 값에 어떤
+연산이 허용되는지}를 정하는 작업이다. 유형을 틀리면 이후의 평균 $\cdot$ 표준편차
+$\cdot$ 그래프가 전부 조용히 틀린다 --- 계산은 성공하고 숫자도 나오기 때문이다.
+\end{keyidea}
+
+% =====================================================================
+\section{두 번의 질문으로 가른다}
+\label{sec:attr-flow}
+
+\begin{inbrief}
+  \item[Why] 값에 허용된 연산을 알아야 요약값과 그래프를 고를 수 있기 때문이다.
+  \item[When] 데이터를 받자마자, 어떤 통계도 계산하기 전에 한다.
+  \item[Where] 모든 변수에 적용한다. 특히 숫자로 저장된 범주형(우편번호, ID,
+               코드)에서 판단이 갈린다.
+  \item[How] 질문 두 개를 순서대로 던진다. ``숫자로 계산이 되는가'' $\to$
+             ``0이 없음을 뜻하는가'' 또는 ``값들 사이에 순서가 있는가''.
+\end{inbrief}
+
+가름은 2단계로 끝난다. 1단계에서 \term{수치형}(Numeric)과
+\term{범주형}(Categorical)을 나누고, 2단계에서 각각을 다시 둘로 나눈다
+(\Cref{fig:attr-flow}).
+
+\begin{figure}[ht]\centering
+\begin{tikzpicture}[
+  qbox/.style    = {draw = bookaccent, fill = bookaccentbg, rounded corners = 2pt,
+                    minimum width = 46mm, minimum height = 8mm, align = center,
+                    font = \small, inner sep = 2pt},
+  leafbox/.style = {draw = bookrule, fill = booksurface, rounded corners = 2pt,
+                    minimum width = 34mm, minimum height = 11mm, align = center,
+                    font = \small, inner sep = 2pt},
+  arrow/.style   = {-{Stealth[length=2.2mm]}, draw = bookmuted},
+  elab/.style    = {font = \scriptsize\color{bookmuted}, inner sep = 1.5pt}]
+
+  \node[qbox] (q1) at (0, 0) {1단계: 숫자로 계산이 되는가?};
+
+  \node[qbox] (q2) at (-3.9, -1.6) {2단계: 0이 ``없음''인가?};
+  \node[qbox] (q3) at ( 3.9, -1.6) {2단계: 순서가 있는가?};
+
+  \node[leafbox] (ratio)    at (-5.8, -3.6) {비율(Ratio)\\[-2pt] \scriptsize 칼로리 $\cdot$ 금액};
+  \node[leafbox] (interval) at (-2.0, -3.6) {구간(Interval)\\[-2pt] \scriptsize 섭씨온도 $\cdot$ 연도};
+  \node[leafbox] (ordinal)  at ( 2.0, -3.6) {순서(Ordinal)\\[-2pt] \scriptsize 학력 $\cdot$ 만족도};
+  \node[leafbox] (nominal)  at ( 5.8, -3.6) {명목(Nominal)\\[-2pt] \scriptsize 혈액형 $\cdot$ 우편번호};
+
+  \draw[arrow] (q1.south) -- ++(0,-0.4) -| (q2.north)
+        node[elab, pos=0.45, above] {수치형};
+  \draw[arrow] (q1.south) -- ++(0,-0.4) -| (q3.north)
+        node[elab, pos=0.45, above] {범주형};
+
+  \draw[arrow] (q2.south) -- ++(0,-0.5) -| (ratio.north)
+        node[elab, pos=0.45, above] {0 = 없음};
+  \draw[arrow] (q2.south) -- ++(0,-0.5) -| (interval.north)
+        node[elab, pos=0.45, above] {0 = 기준점};
+  \draw[arrow] (q3.south) -- ++(0,-0.5) -| (ordinal.north)
+        node[elab, pos=0.45, above] {서열 있음};
+  \draw[arrow] (q3.south) -- ++(0,-0.5) -| (nominal.north)
+        node[elab, pos=0.45, above] {서열 없음};
+\end{tikzpicture}
+\caption{속성 유형을 가르는 두 번의 질문. 1단계에서 수치형/범주형을 나누고,
+2단계에서 각각을 다시 둘로 나눈다.}
+\label{fig:attr-flow}
+\end{figure}
+
+% =====================================================================
+\section{수치형 --- 구간과 비율}
+\label{sec:attr-numeric}
+
+\begin{inbrief}
+  \item[Why] 같은 수치형이라도 ``몇 배''라는 말이 성립하는 것과 아닌 것이 있기
+             때문이다.
+  \item[When] 1단계에서 수치형으로 가른 뒤에 던지는 질문이다.
+  \item[Where] 온도 $\cdot$ 연도 $\cdot$ 지능지수는 구간, 무게 $\cdot$ 금액
+               $\cdot$ 개수는 비율이다.
+  \item[How] ``값 0이 정말로 아무것도 없다는 뜻인가''를 묻는다. 그렇다면 비율,
+             기준점일 뿐이라면 구간이다.
+\end{inbrief}
+
+\begin{definition}[구간 척도와 비율 척도]
+\label{def:interval-ratio}
+\term{구간 척도}(Interval Scale)는 값의 \emph{간격}은 의미가 있지만 0이
+임의의 기준점인 척도다. 덧셈과 뺄셈은 되고, 나눗셈(비율)은 되지 않는다.
+
+\term{비율 척도}(Ratio Scale)는 0이 \term{절대 영점}(Absolute Zero), 즉
+``그 속성이 전혀 없음''을 뜻하는 척도다. 덧셈 $\cdot$ 뺄셈에 더해
+곱셈 $\cdot$ 나눗셈까지 의미를 가진다.
+\end{definition}
+
+\begin{example}[``두 배''가 성립하는가]
+\label{ex:twice}
+섭씨온도는 구간 척도다. $0^\circ\mathrm{C}$ 는 열이 없다는 뜻이 아니라 물이 어는
+지점을 0으로 잡은 약속일 뿐이다. 그래서 $20^\circ\mathrm{C}$ 는
+$10^\circ\mathrm{C}$ 보다 ``$10^\circ$ 더 덥다''라고는 말할 수 있어도
+``두 배 덥다''라고는 말할 수 없다. 실제로 같은 온도를 화씨로 바꾸면 50\,\textdegree F
+와 68\,\textdegree F 가 되어 비율이 $2.0$ 에서 $1.36$ 으로 바뀐다 --- 단위를
+바꿨을 뿐인데 답이 달라진다면 그 계산은 애초에 의미가 없었던 것이다.
+
+칼로리는 비율 척도다. 0\,kcal 는 열량이 실제로 없다는 뜻이므로,
+540\,kcal 는 270\,kcal 의 ``두 배''가 맞다. 단위를 kJ 로 바꿔도 비율은 그대로다.
+\end{example}
+
+% =====================================================================
+\section{범주형 --- 명목과 순서}
+\label{sec:attr-categorical}
+
+\begin{inbrief}
+  \item[Why] 범주에 순서가 있으면 중앙값과 정렬이 허용되고, 없으면 금지되기
+             때문이다.
+  \item[When] 1단계에서 범주형으로 가른 뒤에 던지는 질문이다.
+  \item[Where] 혈액형 $\cdot$ 지역 $\cdot$ 음식 종류는 명목, 학력 $\cdot$ 만족도
+               $\cdot$ 학점은 순서다.
+  \item[How] ``값들 사이에 자연스러운 서열이 있는가''를 묻는다. 나열 순서를
+             뒤바꿔도 아무 문제가 없다면 명목이다.
+\end{inbrief}
+
+\begin{definition}[명목 척도와 순서 척도]
+\label{def:nominal-ordinal}
+\term{명목 척도}(Nominal Scale)는 ``같다/다르다''만 판정할 수 있는 척도다.
+서열이 없으므로 나열 순서는 임의다.
+
+\term{순서 척도}(Ordinal Scale)는 값들 사이에 서열이 있는 척도다. 단, 등급
+사이의 \emph{간격이 같다는 보장은 없다}.
+\end{definition}
+
+순서 척도에서 가장 자주 나오는 실수가 이 간격 문제다. 만족도를
+``매우 불만족 $=1$, 불만족 $=2$, 보통 $=3$, 만족 $=4$, 매우 만족 $=5$''로
+숫자를 붙이면 평균을 계산할 수 있게 되지만, 그 평균 3.4는
+``1$\to$2 의 차이''와 ``4$\to$5 의 차이''가 같다고 가정한 값이다. 그런 가정을
+한 적은 없다.
+
+\begin{pitfall}[숫자로 저장되었다고 수치형이 아니다]
+우편번호, 학번, 제품 코드, 등번호는 전부 정수로 저장되지만 \term{명목
+척도}(Nominal Scale)다. \texttt{pandas} 는 이들을 \texttt{int64} 로 읽고
+\texttt{.mean()} 도 아무 불평 없이 계산해 준다. 오류가 나지 않는다는 것이
+가장 위험한 지점이다 --- 유형은 저장 타입(dtype)이 아니라 \textbf{의미}로
+정한다.
+\end{pitfall}
+
+% =====================================================================
+\section{유형이 통계를 결정한다}
+\label{sec:attr-stats}
+
+\begin{inbrief}
+  \item[Why] 속성 유형을 가르는 목적 자체가 어떤 요약값이 합법인지 정하는
+             것이기 때문이다.
+  \item[When] \Cref{ch:descriptive}의 요약값을 고르기 직전에 확인한다.
+  \item[Where] 중심값 선택(\Cref{sec:center})과 그래프 선택
+               (\Cref{ch:visualization})에 그대로 이어진다.
+  \item[How] \Cref{tab:attr-ops} 의 행을 위에서 아래로 훑어 허용된 연산까지만
+             쓴다.
+\end{inbrief}
+
+허용되는 연산은 \term{명목}$\to$\term{순서}$\to$\term{구간}$\to$\term{비율}
+순으로 누적된다. 위 단계에서 허용된 것은 아래 단계에서도 전부 허용된다
+(\Cref{tab:attr-ops}).
+
+\begin{table}[ht]\centering
+\caption{속성 유형별로 허용되는 연산과 대표 통계. 아래로 갈수록 허용 범위가
+넓어진다.}
+\label{tab:attr-ops}
+\begin{tabularx}{\linewidth}{@{}l l l X@{}}
+\toprule
+척도 & 허용 연산 & 대표 통계 & 예시 \\
+\midrule
+명목(Nominal)  & $=,\ \neq$                    & 최빈값(Mode)
+               & 혈액형 $\cdot$ 우편번호 $\cdot$ 음식 종류 \\
+순서(Ordinal)  & $+\ <,\ >$                    & $+$ 중앙값(Median)
+               & 학력 $\cdot$ 만족도 $\cdot$ 학점 \\
+구간(Interval) & $+\ -$                        & $+$ 평균(Mean) $\cdot$ 표준편차
+               & 섭씨온도 $\cdot$ 연도 $\cdot$ 지능지수 \\
+비율(Ratio)    & $+\ \times,\ \div$            & $+$ 기하평균 $\cdot$ 변동계수
+               & 칼로리 $\cdot$ 무게 $\cdot$ 금액 $\cdot$ 개수 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+이 표는 \Cref{ch:descriptive} 전체의 전제다. 최빈값은 네 유형 모두에서 쓸 수
+있고, 중앙값은 순서 척도부터, 평균과 표준편차는 구간 척도부터 허용된다. 즉
+\Cref{sec:center}에서 ``평균이냐 중앙값이냐''를 고민하는 일 자체가 \textbf{구간
+척도 이상일 때만} 성립하는 질문이다. 명목 척도에서는 그 질문이 아예 없다.
+
+\begin{example}[과제 데이터의 여덟 변수]
+\label{ex:hw1-types}
+HW1 의 패스트푸드 영양정보 데이터
+(\Cref{ch:hw1})는 여덟 개 변수를 가진다. 유형을 가르면 이렇게 된다.
+
+\begin{center}
+\begin{tabularx}{0.95\linewidth}{@{}l l X@{}}
+\toprule
+변수 & 유형 & 그렇게 가른 이유 \\
+\midrule
+\texttt{restaurant}   & 명목(Nominal) & 식당 이름. 순서가 없다 \\
+\texttt{item}         & 명목(Nominal) & 메뉴 이름. 고유 식별자에 가깝다 \\
+\texttt{type}         & 명목(Nominal) & 음식 종류. 우열이 없다 \\
+\texttt{serving\_size}& 비율(Ratio)   & 0\,g 은 양이 없다는 뜻 \\
+\texttt{calories}     & 비율(Ratio)   & 0\,kcal 은 열량이 없다는 뜻 \\
+\texttt{fat}          & 비율(Ratio)   & 0\,g 은 지방이 없다는 뜻 \\
+\texttt{sodium}       & 비율(Ratio)   & 0\,mg 은 나트륨이 없다는 뜻 \\
+\texttt{sugars}       & 비율(Ratio)   & 0\,g 은 당류가 없다는 뜻 \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+수치형 다섯 개가 전부 비율 척도이므로 평균 $\cdot$ 표준편차 $\cdot$ 비율 계산이
+모두 합법이다. 반면 명목 변수 셋에는 최빈값과 빈도만 쓸 수 있다 ---
+\texttt{restaurant} 의 ``평균''은 존재하지 않는다.
+\end{example}
+
+\begin{aside}[이 데이터에 구간 척도가 없는 이유]
+구간 척도는 사람이 기준점을 약속해서 만든 눈금(온도, 연도, 시험 점수)에서
+주로 나온다. 물리적 양을 측정한 값은 대개 0 이 곧 ``없음''이므로 비율 척도가
+된다. 영양정보처럼 측정값만 모인 데이터에 구간 척도가 없는 것은 우연이 아니다.
+\end{aside}
