@@ -88,7 +88,7 @@ packages/db/ERD*.dot
 *.xdv
 *.bbl
 *.blg
-hw1/report/*.log
+hw*/report/*.log
 
 # Office lock files (`~$name.xlsx` appears while the workbook is open).
 ~$*
