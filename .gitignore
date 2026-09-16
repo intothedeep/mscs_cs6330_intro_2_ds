@@ -48,6 +48,7 @@ x_*
 .venv/
 .vscode/
 .ruff_cache
+__pycache__
 
 # real lab data — the source workbook holds REAL colony records; never committed.
 # The anonymized seed generator (P0.5) is the committed substitute.
@@ -73,3 +74,21 @@ scripts/migration/_dumps/
 # ERD graphviz intermediate — the .png/.svg outputs ARE committed so the
 # diagram is readable without graphviz installed.
 packages/db/ERD*.dot
+
+# --- LaTeX intermediates. The compiled report PDF IS committed (it is the
+# submitted deliverable); every other build product is regenerable. ---
+*.aux
+*.fdb_latexmk
+*.fls
+*.lof
+*.lot
+*.out
+*.synctex.gz
+*.toc
+*.xdv
+*.bbl
+*.blg
+hw1/report/*.log
+
+# Office lock files (`~$name.xlsx` appears while the workbook is open).
+~$*
