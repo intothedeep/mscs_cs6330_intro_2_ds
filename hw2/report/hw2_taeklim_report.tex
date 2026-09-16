@@ -1,0 +1,122 @@
+% =====================================================================
+%  CS 6330 - Introduction to Data Science
+%  Homework 2: Data and Distributions
+%  Author: Taek Lim
+%
+%  Build:  latexmk -pdf hw2_taeklim_report.tex
+%      or: pdflatex hw2_taeklim_report.tex   (run twice for references)
+%
+%  Figure paths are relative to this file: ../figures/*.png
+% =====================================================================
+\documentclass[11pt]{article}
+
+\usepackage[letterpaper,margin=0.75in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{array}        % >{...} column modifiers
+\usepackage{booktabs}     % \toprule \midrule \bottomrule
+\usepackage{float}        % [H] = put the float exactly here, no deferring
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage[hidelinks]{hyperref}
+
+\lstset{
+  basicstyle=\ttfamily\small,
+  breaklines=true,
+  frame=single,
+  rulecolor=\color{gray!40},
+  backgroundcolor=\color{gray!5},
+  showstringspaces=false,
+  columns=fullflexible,
+}
+
+\captionsetup{font=small, labelfont=bf}
+
+% Question heads: sky blue, bold. Darkened from a literal "sky blue" so the
+% heading still reads on paper and in greyscale print.
+\definecolor{headblue}{HTML}{0C6FB8}
+\newcommand{\question}[2]{%
+  \section*{\color{headblue}#1 \hfill \normalfont\small(#2)}}
+
+
+\title{\textbf{Homework 2: Data and Distributions}\\[2pt]
+       \large Fitting power-law, exponential, uniform and normal models}
+\author{Taek Lim \\ \small CS 6330: Introduction to Data Science}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\noindent
+\textbf{Data.} \texttt{airport\_routes.csv} (3409 airports, Feb 2017),
+\texttt{movie\_votes.csv} (4392 TMDb average ratings),
+\texttt{DoB.txt} (460{,}718 IMDb birth dates).\\
+\textbf{Tooling.} Python 3 / pandas / numpy / scipy / matplotlib; all estimates
+computed programmatically, none typed by hand.
+
+\vspace{1em}\hrule\vspace{1em}
+
+% =====================================================================
+\question{Problem 1: Fit four distributions to two datasets}{90 pts}
+
+% Per the spec, parts (a)-(d) are repeated for EACH dataset:
+%   (a) power law   -> alpha        (5 pts x 2 datasets)
+%   (b) exponential -> lambda       (5 pts x 2)
+%   (c) uniform     -> [a, b]       (5 pts x 2)
+%   (d) normal      -> mu, sigma    (5 pts x 2)
+% then, per dataset: distribution of the data (5 pts x 2) and the comparison
+% against samples drawn from each fitted model + discussion (20 pts x 2).
+% PDF, CDF or QQ plot -- one of the three is enough to support the conclusion.
+
+\subsection*{Dataset A: airport routes}
+
+\subsubsection*{(a) Power law: $\alpha$}
+
+\subsubsection*{(b) Exponential: $\lambda$}
+
+\subsubsection*{(c) Uniform: $[a, b]$}
+
+\subsubsection*{(d) Normal: $\mu$ and $\sigma$}
+
+\subsubsection*{Distribution of the data}
+
+\subsubsection*{Which model fits, and why}
+
+\subsection*{Dataset B: movie votes}
+
+\subsubsection*{(a) Power law: $\alpha$}
+
+\subsubsection*{(b) Exponential: $\lambda$}
+
+\subsubsection*{(c) Uniform: $[a, b]$}
+
+\subsubsection*{(d) Normal: $\mu$ and $\sigma$}
+
+\subsubsection*{Distribution of the data}
+
+\subsubsection*{Which model fits, and why}
+
+% =====================================================================
+\clearpage
+\question{Problem 2: Age, first digit and last digit}{30 pts}
+
+% Ages are derived from DoB.txt and restricted to 1-99 years.
+% NOTE: the spec says FIRST digit and LAST digit (hw2_introduction.txt says
+% "smallest/largest" -- the PDF wins). For age 34: first = 3, last = 4.
+
+\subsection*{Distribution of age}
+
+\subsection*{Distribution of the first digit}
+
+\subsection*{Distribution of the last digit}
+
+\subsection*{Discussion: which digits are uniform, and why}
+
+% Expected, but must be shown rather than asserted: the last digit is close to
+% uniform while the first digit is not, because the age range 1-99 is not a
+% power of ten and the age distribution itself is not flat.
+
+\end{document}
