@@ -1,0 +1,238 @@
+% =====================================================================
+%  CS 6330 - Introduction to Data Science
+%  Homework 2: Data and Distributions
+%  Author: Taek Lim
+%
+%  제출용 빈 템플릿: 답은 비워 두었고, 해야 할 일을 STEP 주석으로 적어 두었다.
+%  본문 구조는 교수님 템플릿(00_doc/04_template_for_answers.pdf)을 그대로 따른다:
+%  굵은 제목 + "-" 문항 목록, 쪽 나눔은 Airport / Movie Rating / Problem 2.
+%  문항 문구는 바꾸지 않는다. 답은 각 문항 바로 아래에 쓴다.
+%  Build:  latexmk -pdf hw2_taeklim_report.tex
+%
+%  ---------------------------------------------------------------------
+%  전체 진행 순서 (STEP 0 -> 10)
+%  ---------------------------------------------------------------------
+%  STEP 0  준비
+%    - 코드는 hw2/code_submit/, 그림은 hw2/figures_submit/ 에 둔다.
+%      (hw2/code, hw2/figures 는 참고용 버전이다. 섞이지 않게 폴더를 나눈다.)
+%    - 실행: repo 루트에서 `uv run python hw2/code_submit/p1.py`
+%      (pandas / numpy / scipy / matplotlib 은 이미 pyproject.toml 에 있다.)
+%    - GUI 가 없는 환경에서 plt 가 tkinter 에러를 내면 import 전에
+%      matplotlib.use("Agg") 를 호출한다.
+%
+%  STEP 1  데이터 먼저 보기 (Problem 1)
+%    - 두 CSV 를 읽고 describe(): n, min, max, mean, median 을 확인한다.
+%    - 0 이나 음수가 있는지 확인한다. power law 식에는 ln(x) 가 들어가고,
+%      log 축은 0 을 그릴 수 없다.
+%    - 평균과 중앙값이 크게 다르면 무엇을 뜻하는지 생각해 둔다.
+%
+%  STEP 2  모델별 모수 추정 (파라미터 4개 x 데이터 2개, 40점)
+%    - 각 분포의 MLE(최대우도추정) 공식을 강의 자료나 교재에서 찾는다.
+%      * power law : alpha 는 x_min 에 따라 달라진다. x_min 을 무엇으로 잡았는지
+%                    반드시 적는다. (키워드: "Clauset power law MLE")
+%      * exponential: lambda 와 평균의 관계
+%      * uniform    : [a, b] 를 데이터에서 어떻게 정하는가
+%      * normal     : mu, sigma. sigma 는 n 과 n-1 중 무엇으로 나눴는지 적는다.
+%    - 추정 함수는 순수 함수로 짠다 (입력 배열 -> 모수 dict).
+%    - 숫자는 코드로 출력한 값을 그대로 옮기고, 손으로 계산하지 않는다.
+%    - 답은 "What is the alpha ..." 등 4개 문항 아래에 쓴다. 값과 함께 쓴 공식을
+%      한 줄 적는다 (x_min, n-1 여부 등). 따로 Method 절은 만들지 않는다.
+%
+%  STEP 3  데이터 분포 그림 (데이터당 1장, 5점 x 2)
+%    - airport: 꼬리가 길다. 선형 축과 log-log 축에 각각 그려 보고 비교한다.
+%      CCDF P(X >= x) 를 log-log 로 그리면 power law 는 직선이 된다.
+%    - movie : 평점이 0.1 단위로 반올림돼 있다. bin 경계가 0.1 격자와 어긋나면
+%      히스토그램이 톱니 모양이 된다. 왜 그런지 확인해 본다.
+%
+%  STEP 4  모델에서 난수 샘플 뽑기
+%    - 과제 요구사항: 모델마다 데이터와 같은 개수(n)의 난수를 뽑는다.
+%    - seed 를 고정한다 (그래야 그림을 다시 만들 수 있다).
+%    - numpy 에 power law 샘플러는 없다. 역변환 샘플링(inverse CDF)으로
+%      직접 만든다. CDF 를 적고 u ~ Uniform(0,1) 에 대해 x 를 푼다.
+%
+%  STEP 5  모델 vs 데이터 그림 (모델 4개 x 데이터 2개)
+%    - PDF, CDF, QQ plot 중 하나면 된다. 모든 그림에 같은 종류를 쓴다.
+%    - QQ plot: x 축 = 데이터 분위수, y 축 = 샘플 분위수, 그리고 y = x 기준선.
+%      점이 선 위에 있으면 잘 맞는 것이다. 선에서 벗어난 방향이 뜻하는 바를
+%      직접 해석한다.
+%    - 샘플이 음수이거나 아주 큰 값일 때 (log 축 / 축 범위) 어떻게 처리할지 정한다.
+%
+%  STEP 6  결론과 토론 (20점 x 2, 배점이 가장 크다)
+%    - 네 모델 중 어떤 것이 맞는지 적고, 그림을 근거로 이유를 쓴다.
+%    - 떨어진 모델마다 "왜 구조적으로 안 맞는가"를 한 줄씩 쓴다
+%      (대칭인가? 음수를 허용하는가? 꼬리가 얼마나 빨리 줄어드는가?)
+%    - 이긴 모델도 완벽하지는 않다. 어디서 어긋나는지, 왜 그런지 쓴다.
+%    - 선택: 모델마다 차이를 숫자 하나로 요약한다 (예: KS 거리, scipy.stats.ks_2samp).
+%
+%  STEP 7  나이 파싱 (Problem 2) -- 함정이 많은 부분
+%    - DoB.txt 를 head 로 직접 열어 본다. 날짜 형식이 몇 가지인가?
+%    - 연도가 두 자리다. 어느 세기로 읽을지는 추측하지 말고 연도별 개수를
+%      세어 보고 정한다. pandas 기본 규칙(00-68 -> 20xx)이 이 데이터에
+%      맞는지 확인한다.
+%    - 이상한 값("0000" 등)을 찾아서 처리 방법을 정한다.
+%    - 나이는 "어느 날짜 기준"인가? 기준일과 그 이유를 적는다.
+%    - 1 <= age <= 99 만 남긴다. 파싱 규칙과 필터 뒤에 남은 개수를 적는다.
+%    - 템플릿에 따로 자리가 없으므로 "histogram of the age" 문항 아래,
+%      그림 앞에 2~3 문장으로 적는다.
+%
+%  STEP 8  나이 / 첫째 자리 / 마지막 자리 그림 (5점 x 3)
+%    - 예: 34 -> 첫째 3, 마지막 4.
+%    - 자리 그림에는 균등분포 기준선을 같이 그린다 (몇 분의 1인지 따져 본다).
+%    - 선택: 첫째 자리 그림에 Benford 곡선 log10(1 + 1/d) 을 겹쳐 본다.
+%
+%  STEP 9  Problem 2 토론 (15점)
+%    - 어느 자리가 균등한가? 그것이 예상된 결과인가?
+%    - 균등하지 않은 자리는 어떤 분포를 따르는가? 나이 분포와 어떤 관계인가?
+%    - 그것이 Benford 인가? Benford 가 성립하려면 데이터에 어떤 조건이 필요한가?
+%    - 파싱 규칙이 결과(예: 최소 나이)에 영향을 주었다면 그 사실도 적는다.
+%
+%  STEP 10 마무리
+%    - 템플릿 맨 위에는 이름 줄만 둔다. 도구 사용 고지(무엇을 직접 했고 무엇을
+%      도구로 했는지)를 넣을 거면 문서 맨 끝 주석 자리에 쓴다.
+%    - 부록에 코드를 넣거나 .py 를 따로 제출한다 (부분 점수용).
+%    - 빌드한 뒤 PDF 를 열어 그림, 숫자, 캡션이 서로 맞는지 확인한다.
+% =====================================================================
+\documentclass[11pt]{article}
+
+\usepackage[letterpaper,margin=0.75in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage[hidelinks]{hyperref}
+
+\lstset{
+  basicstyle=\ttfamily\footnotesize,
+  breaklines=true,
+  frame=single,
+  rulecolor=\color{gray!40},
+  backgroundcolor=\color{gray!5},
+  showstringspaces=false,
+  columns=fullflexible,
+}
+
+\captionsetup{font=small, labelfont=bf}
+\setlength{\parindent}{0pt}
+
+% 그림 틀. 사용법: \answerfig{p1a_0_data}{캡션}
+% 목록(itemize) 안에서도 쓸 수 있게 float 대신 \captionof 를 쓴다.
+% 그림 파일이 없으면 빌드가 실패한다. 그림을 만든 뒤에 주석을 푼다.
+\newcommand{\answerfig}[2]{%
+  \par\nopagebreak\smallskip % keep the prompt line on the same page as its figure
+  {\centering
+   \includegraphics[width=\linewidth]{../figures_submit/#1.png}\par
+   \captionof{figure}{#2}\par}
+  \smallskip}
+
+% 교수님 템플릿처럼 글머리표를 "-" 로
+\renewcommand{\labelitemi}{-}
+
+\begin{document}
+
+% 이름 줄 (템플릿에는 없지만 제출물에 이름은 필요하다)
+\hfill Taek Lim \quad CS 6330 Homework 2: Data and Distributions
+
+\bigskip
+% =====================================================================
+\textbf{Problem 1.}
+
+\medskip
+\textbf{Airport data:}
+
+\begin{itemize}
+  \item What is the $\alpha$ if the distribution is power law?
+    % STEP 2
+  \item What is the $\lambda$ if the distribution is exponential?
+    % STEP 2
+  \item What is $[a, b]$ if the distribution is uniform?
+    % STEP 2
+  \item What is $\mu$ and $\sigma$ if the distribution is normal?
+    % STEP 2
+  \item Screen shot of the visualization of distribution of data
+    % STEP 3
+    % \answerfig{p1a_0_data}{...}
+
+  (These can be CDF, PDF, or QQplot)
+  \item Screen shot of the visualization of distribution of data if it was power law
+    % STEP 4, 5
+    % \answerfig{p1a_1_powerlaw}{...}
+  \item Screen shot of the visualization of distribution of data if it was exponential
+    % STEP 4, 5
+    % \answerfig{p1a_2_exponential}{...}
+  \item Screen shot of the visualization of distribution of data if it was uniform
+    % STEP 4, 5
+    % \answerfig{p1a_3_uniform}{...}
+  \item Screen shot of the visualization of distribution of data if it was normal
+    % STEP 4, 5
+    % \answerfig{p1a_4_normal}{...}
+  \item What is the distribution of data based on your observation? Discuss
+    % STEP 6
+\end{itemize}
+
+% =====================================================================
+\clearpage
+\textbf{Movie Rating data:}
+
+\begin{itemize}
+  \item What is the $\alpha$ if the distribution is power law?
+    % STEP 2
+  \item What is the $\lambda$ if the distribution is exponential?
+    % STEP 2
+  \item What is $[a, b]$ if the distribution is uniform?
+    % STEP 2
+  \item What is $\mu$ and $\sigma$ if the distribution is normal?
+    % STEP 2
+  \item Screen shot of the visualization of distribution of data
+    % STEP 3
+    % \answerfig{p1b_0_data}{...}
+
+  (These can be CDF, PDF, or QQplot)
+  \item Screen shot of the visualization of distribution of data if it was power law
+    % STEP 4, 5
+    % \answerfig{p1b_1_powerlaw}{...}
+  \item Screen shot of the visualization of distribution of data if it was exponential
+    % STEP 4, 5
+    % \answerfig{p1b_2_exponential}{...}
+  \item Screen shot of the visualization of distribution of data if it was uniform
+    % STEP 4, 5
+    % \answerfig{p1b_3_uniform}{...}
+  \item Screen shot of the visualization of distribution of data if it was normal
+    % STEP 4, 5
+    % \answerfig{p1b_4_normal}{...}
+  \item What is the distribution of data based on your observation? Discuss
+    % STEP 6
+\end{itemize}
+
+% =====================================================================
+\clearpage
+\textbf{Problem 2.}
+
+\begin{itemize}
+  \item Screenshot of distribution/histogram of the age
+    % STEP 7 (파싱 규칙, 기준일, 남은 개수를 2~3 문장으로), STEP 8
+    % \answerfig{p2_1_age}{...}
+  \item Screenshot of distribution/histogram of the first digit of age
+    % STEP 8
+    % \answerfig{p2_2_first_digit}{...}
+  \item Screenshot of distribution/histogram of the last digit of age
+    % STEP 8
+    % \answerfig{p2_3_last_digit}{...}
+  \item Discussion (what are those distribution?) Why do you think it is like this?
+    % STEP 9
+\end{itemize}
+
+% =====================================================================
+% STEP 10 (선택): 도구 사용 고지
+% \bigskip
+% \textbf{Tooling.} ...
+
+% STEP 10 (선택): 코드를 부록으로 넣을 때 아래 주석을 푼다.
+% \clearpage
+% \textbf{Code}
+% \lstinputlisting[language=Python]{../code_submit/p1.py}
+% \lstinputlisting[language=Python]{../code_submit/p2.py}
+
+\end{document}
